@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Students - School ERP</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
+
+  <link rel="stylesheet" href="../style.css" />
+  <style>
+    body{background:rgba(27,42,74,.04)}
+    .student-toolbar{background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.10); border-radius:8px}
+    .student-grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:14px}
+    .student-card{border:1px solid rgba(27,42,74,.12); border-radius:8px; background:rgba(255,255,255,.82); box-shadow:0 10px 28px rgba(27,42,74,.08); cursor:pointer; transition:transform .15s ease, box-shadow .15s ease, border-color .15s ease}
+    .student-card:hover{transform:translateY(-2px); border-color:rgba(109,94,252,.45); box-shadow:0 16px 34px rgba(27,42,74,.14)}
+    .student-avatar{width:48px; height:48px; border-radius:50%; display:grid; place-items:center; background:rgba(109,94,252,.12); color:rgba(109,94,252,1); font-weight:900; flex:0 0 auto}
+    .student-name{font-size:1rem; font-weight:900; color:rgba(27,42,74,.96); line-height:1.25}
+    .student-meta{color:rgba(27,42,74,.68); font-size:.86rem; font-weight:800}
+    .info-pill{border:1px solid rgba(27,42,74,.12); border-radius:999px; padding:5px 9px; color:rgba(27,42,74,.72); background:rgba(255,255,255,.72); font-size:.78rem; font-weight:800}
+    .detail-panel{background:rgba(255,255,255,.9); border:1px solid rgba(27,42,74,.12); border-radius:8px; box-shadow:0 18px 42px rgba(27,42,74,.12)}
+    .detail-section{border:1px solid rgba(27,42,74,.10); border-radius:8px; background:rgba(255,255,255,.72)}
+    .kv{display:grid; grid-template-columns:190px 1fr; gap:10px; padding:8px 0; border-bottom:1px dashed rgba(27,42,74,.14)}
+    .kv:last-child{border-bottom:none}
+    .key{font-weight:900; color:rgba(27,42,74,.66)}
+    .val{color:rgba(27,42,74,.96); word-break:break-word}
+    .empty-state{border:1px dashed rgba(27,42,74,.2); border-radius:8px; background:rgba(255,255,255,.62); color:rgba(27,42,74,.68); font-weight:800}
+    @media (max-width: 576px){
+      .student-grid{grid-template-columns:1fr}
+      .kv{grid-template-columns:1fr; gap:2px}
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell d-flex">
+    <nav id="sidebar" class="sidebar d-flex flex-column vh-100 position-sticky top-0">
+      <div class="sidebar-brand">
+        <div class="brand-mark">ERP</div>
+        <div class="brand-text">
+          <strong>School ERP</strong>
+          <span>Admin Console</span>
+        </div>
+      </div>
+
+      <div class="px-2 pb-3">
+        <button class="btn btn-sm btn-soft rounded-pill" onclick="DashUI.sidebarToggle()" title="Collapse sidebar">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+      </div>
+
+      <div class="sidebar-nav nav flex-column gap-1 px-2 pb-3" style="overflow:auto;">
+        <a class="nav-link" href="./admin-dashboard.html" data-nav="dashboard">
+          <i class="fa-solid fa-gauge-high"></i>
+          <span>Dashboard</span>
+        </a>
+        <a class="nav-link active" href="./students.html" data-nav="students">
+          <i class="fa-solid fa-user-graduate"></i>
+          <span>Students</span>
+        </a>
+        <a class="nav-link" href="./admissions.html" data-nav="admissions">
+          <i class="fa-solid fa-file-signature"></i>
+          <span>Admissions</span>
+        </a>
+        <a class="nav-link" href="./admin-dashboard.html">
+          <i class="fa-solid fa-calendar-check"></i>
+          <span>Attendance</span>
+        </a>
+        <a class="nav-link" href="./admin-dashboard.html">
+          <i class="fa-solid fa-layer-group"></i>
+          <span>Classes</span>
+        </a>
+        <a class="nav-link" href="./admin-dashboard.html">
+          <i class="fa-solid fa-book"></i>
+          <span>Subjects</span>
+        </a>
+        <a class="nav-link" href="./admin-dashboard.html">
+          <i class="fa-solid fa-chalkboard-user"></i>
+          <span>Teachers</span>
+        </a>
+        <a class="nav-link mt-2" href="#" onclick="DashUI.logout()">
+          <i class="fa-solid fa-right-from-bracket"></i>
+          <span>Logout</span>
+        </a>
+      </div>
+    </nav>
+
+    <main class="main flex-fill">
+      <div class="topbar py-3">
+        <div class="container-fluid px-3 px-md-4">
+          <div class="d-flex align-items-center justify-content-between gap-3">
+            <div>
+              <h4 class="m-0 glass-title"><i class="fa-solid fa-user-graduate me-2"></i>Students</h4>
+              <div class="text-muted" style="color:rgba(27,42,74,.65)!important; font-weight:800;">Student list and admission details</div>
+            </div>
+            <button class="btn btn-success rounded-pill" onclick="location.href='new-admission.html'">
+              <i class="fa-solid fa-plus me-2"></i>New Admission
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="container-fluid">
+        <div class="p-3 p-md-4">
+          <div class="student-toolbar p-3 p-md-4 mb-3">
+            <div class="row g-2 align-items-center">
+              <div class="col-12 col-lg-7">
+                <div class="input-group">
+                  <span class="input-group-text btn-soft" style="border-radius:8px 0 0 8px; border-right:none;">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                  </span>
+                  <input id="studentSearch" class="form-control" placeholder="Search student name, student ID, application no, roll no" autocomplete="off" />
+                </div>
+              </div>
+              <div class="col-12 col-lg-5">
+                <div class="d-flex flex-wrap justify-content-lg-end gap-2">
+                  <span class="info-pill" id="totalStudents">Students: 0</span>
+                  <span class="info-pill" id="admissionStudents">Admission records: 0</span>
+                  <button class="btn btn-soft rounded-pill" onclick="loadStudentsPage()">
+                    <i class="fa-solid fa-rotate me-2"></i>Refresh
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="row g-3">
+            <div class="col-12 col-xl-5">
+              <div id="studentList" class="student-grid"></div>
+            </div>
+            <div class="col-12 col-xl-7">
+              <div id="studentDetails" class="detail-panel p-3 p-md-4">
+                <div class="empty-state p-4 text-center">
+                  Select a student box to open full details.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="../script.js"></script>
+  <script>
+    DashUI.ensureRole('admin');
+    DashUI.hydrateSidebarCollapse();
+
+    const state = {
+      cards: [],
+      admissionById: new Map(),
+      selectedKey: null
+    };
+
+    function esc(value){
+      return String(value ?? '').replace(/[&<>"']/g, ch => ({
+        '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'
+      })[ch]);
+    }
+
+    function display(value){
+      const text = String(value ?? '').trim();
+      return text ? esc(text) : '&mdash;';
+    }
+
+    function fullName(item){
+      return [item.student_first_name, item.student_middle_name, item.student_last_name]
+        .filter(Boolean).join(' ').trim();
+    }
+
+    function initials(name){
+      const parts = String(name || 'Student').trim().split(/\s+/).filter(Boolean);
+      return parts.slice(0, 2).map(p => p[0]?.toUpperCase()).join('') || 'ST';
+    }
+
+    function kv(key, value){
+      return `<div class="kv"><div class="key">${esc(key)}</div><div class="val">${display(value)}</div></div>`;
+    }
+
+    function section(title, icon, rows){
+      return `
+        <div class="col-12 col-lg-6">
+          <div class="detail-section p-3 h-100">
+            <div class="fw-bold mb-2"><i class="fa-solid ${icon} me-2"></i>${esc(title)}</div>
+            ${rows.join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    async function apiCall(endpoint, options = {}){
+      return DashAPI.apiCall(endpoint, options);
+    }
+
+    async function loadStudentsPage(){
+      const list = document.getElementById('studentList');
+      list.innerHTML = `<div class="empty-state p-4 text-center">Loading students...</div>`;
+      document.getElementById('studentDetails').innerHTML = `<div class="empty-state p-4 text-center">Select a student box to open full details.</div>`;
+
+      try{
+        const [registered, admissions] = await Promise.all([
+          apiCall('/admin/students').catch(() => []),
+          apiCall('/admissions?page=1&limit=100').catch(() => ({ items: [] }))
+        ]);
+
+        const admissionCards = (admissions.items || []).map(item => {
+          const name = fullName(item) || 'Unnamed Student';
+          return {
+            key: `admission-${item.id}`,
+            source: 'admission',
+            id: item.id,
+            studentId: item.application_no || item.id,
+            name,
+            className: item.class_applying_for,
+            status: item.status,
+            photo: item.student_photo_path,
+            search: `${name} ${item.application_no || ''} ${item.class_applying_for || ''}`.toLowerCase()
+          };
+        });
+
+        const registeredCards = (Array.isArray(registered) ? registered : []).map(item => {
+          const name = item.userId?.name || 'Unnamed Student';
+          return {
+            key: `student-${item._id}`,
+            source: 'registered',
+            raw: item,
+            studentId: item.rollNo || item._id,
+            name,
+            className: item.class,
+            status: 'registered',
+            search: `${name} ${item.rollNo || ''} ${item._id || ''} ${item.userId?.email || ''} ${item.class || ''}`.toLowerCase()
+          };
+        });
+
+        state.cards = [...admissionCards, ...registeredCards];
+        document.getElementById('totalStudents').textContent = `Students: ${state.cards.length}`;
+        document.getElementById('admissionStudents').textContent = `Admission records: ${admissionCards.length}`;
+        renderList();
+
+        const requestedAdmissionId = new URLSearchParams(window.location.search).get('admissionId');
+        if(requestedAdmissionId){
+          const newCard = state.cards.find(card => card.source === 'admission' && String(card.id) === String(requestedAdmissionId));
+          if(newCard) openStudent(newCard.key);
+        }
+      }catch(err){
+        list.innerHTML = `<div class="empty-state p-4 text-danger">Failed to load students: ${esc(err.message || err)}</div>`;
+      }
+    }
+
+    function renderList(){
+      const query = document.getElementById('studentSearch').value.trim().toLowerCase();
+      const list = document.getElementById('studentList');
+      const filtered = state.cards.filter(card => !query || card.search.includes(query));
+
+      if(!filtered.length){
+        list.innerHTML = `<div class="empty-state p-4 text-center">No students found.</div>`;
+        return;
+      }
+
+      list.innerHTML = filtered.map(card => {
+        const active = state.selectedKey === card.key ? 'border-color:rgba(109,94,252,.75);' : '';
+        const sourceLabel = card.source === 'admission' ? 'Admission' : 'Account';
+        return `
+          <div class="student-card p-3" style="${active}" onclick="openStudent('${esc(card.key)}')">
+            <div class="d-flex gap-3 align-items-start">
+              <div class="student-avatar">${esc(initials(card.name))}</div>
+              <div class="flex-grow-1">
+                <div class="student-name">${display(card.name)}</div>
+                <div class="student-meta">ID: ${display(card.studentId)}</div>
+                <div class="d-flex flex-wrap gap-2 mt-3">
+                  <span class="info-pill"><i class="fa-solid fa-layer-group me-1"></i>${display(card.className)}</span>
+                  <span class="info-pill">${esc(sourceLabel)}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function openStudent(key){
+      const card = state.cards.find(item => item.key === key);
+      if(!card) return;
+      state.selectedKey = key;
+      renderList();
+
+      if(card.source === 'registered'){
+        renderRegisteredStudent(card.raw);
+        return;
+      }
+
+      const details = document.getElementById('studentDetails');
+      details.innerHTML = `<div class="empty-state p-4 text-center">Loading full admission details...</div>`;
+      try{
+        let data = state.admissionById.get(card.id);
+        if(!data){
+          data = await apiCall(`/admissions/${card.id}`);
+          state.admissionById.set(card.id, data);
+        }
+        renderAdmissionStudent(data);
+      }catch(err){
+        details.innerHTML = `<div class="empty-state p-4 text-danger">Failed to load details: ${esc(err.message || err)}</div>`;
+      }
+    }
+
+    function renderRegisteredStudent(student){
+      document.getElementById('studentDetails').innerHTML = `
+        <div class="d-flex align-items-start justify-content-between gap-3 mb-3">
+          <div>
+            <h5 class="glass-title m-0">${display(student.userId?.name)}</h5>
+            <div class="student-meta">Student ID / Roll No: ${display(student.rollNo)}</div>
+          </div>
+          <span class="info-pill">Registered Student</span>
+        </div>
+        <div class="row g-3">
+          ${section('Student Account', 'fa-id-card', [
+            kv('Full Name', student.userId?.name),
+            kv('Email', student.userId?.email),
+            kv('Role', student.userId?.role),
+            kv('Student Record ID', student._id),
+            kv('User ID', student.userId?._id),
+          ])}
+          ${section('Academic Details', 'fa-book-open', [
+            kv('Class', student.class),
+            kv('Roll No', student.rollNo),
+            kv('Parent Name', student.parentName),
+            kv('Created On', student.createdAt ? new Date(student.createdAt).toLocaleDateString() : ''),
+            kv('Updated On', student.updatedAt ? new Date(student.updatedAt).toLocaleDateString() : ''),
+          ])}
+        </div>
+      `;
+    }
+
+    function renderAdmissionStudent(data){
+      const name = fullName(data);
+      document.getElementById('studentDetails').innerHTML = `
+        <div class="d-flex align-items-start justify-content-between gap-3 mb-3">
+          <div>
+            <h5 class="glass-title m-0">${display(name)}</h5>
+            <div class="student-meta">Student ID / Application No: ${display(data.application_no)}</div>
+          </div>
+          <span class="info-pill">${display(data.status || 'Admission')}</span>
+        </div>
+        <div class="row g-3">
+          ${section('Student Information', 'fa-user', [
+            kv('Full Name', name),
+            kv('DOB', data.dob),
+            kv('Age', data.age),
+            kv('Gender', data.gender),
+            kv('Blood Group', data.blood_group),
+            kv('Nationality', data.nationality),
+            kv('Religion', data.religion),
+            kv('Caste', data.caste),
+            kv('Caste Category', data.caste_category),
+            kv('Mother Tongue', data.mother_tongue),
+            kv('Place of Birth', data.place_of_birth),
+            kv('Aadhaar No', data.aadhaar_no),
+            kv('Birth Certificate No', data.birth_certificate_no),
+          ])}
+          ${section('Academic Details', 'fa-book-open', [
+            kv('Academic Year', data.academic_year),
+            kv('Class Applying For', data.class_applying_for),
+            kv('Section Preference', data.section_preference),
+            kv('Medium of Instruction', data.medium_of_instruction),
+            kv('Second Language', data.second_language),
+            kv('Third Language', data.third_language),
+            kv('Previous School Name', data.previous_school_name),
+            kv('Previous School Board', data.previous_school_board),
+            kv('Previous Class Passed', data.previous_class_passed),
+            kv('Percentage / Marks', data.percentage_last_class),
+            kv('TC Number', data.tc_number),
+            kv('Extracurricular', data.extracurricular_activities),
+            kv('Special Needs', data.special_needs),
+            kv('Special Needs Details', data.special_needs_details),
+          ])}
+          ${section('Address & Contact', 'fa-location-dot', [
+            kv('Present Address Line 1', data.present_address_line1),
+            kv('Present Address Line 2', data.present_address_line2),
+            kv('Present City', data.present_city),
+            kv('Present District', data.present_district),
+            kv('Present State', data.present_state),
+            kv('Present PIN', data.present_pincode),
+            kv('Permanent Address Same', data.is_permanent_same),
+            kv('Permanent Address Line 1', data.permanent_address_line1),
+            kv('Permanent City', data.permanent_city),
+            kv('Permanent District', data.permanent_district),
+            kv('Permanent State', data.permanent_state),
+            kv('Permanent PIN', data.permanent_pincode),
+            kv('Student Mobile', data.student_mobile),
+            kv('Student Email', data.student_email),
+          ])}
+          ${section('Parent / Guardian', 'fa-people-roof', [
+            kv('Father Name', [data.father_first_name, data.father_last_name].filter(Boolean).join(' ')),
+            kv('Father Qualification', data.father_qualification),
+            kv('Father Occupation', data.father_occupation),
+            kv('Father Employer', data.father_employer_name),
+            kv('Father Annual Income', data.father_annual_income),
+            kv('Father Mobile', data.father_mobile),
+            kv('Father Email', data.father_email),
+            kv('Father Aadhaar', data.father_aadhaar),
+            kv('Father PAN', data.father_pan),
+            kv('Mother Name', [data.mother_first_name, data.mother_last_name].filter(Boolean).join(' ')),
+            kv('Mother Qualification', data.mother_qualification),
+            kv('Mother Occupation', data.mother_occupation),
+            kv('Mother Annual Income', data.mother_annual_income),
+            kv('Mother Mobile', data.mother_mobile),
+            kv('Mother Email', data.mother_email),
+            kv('Mother Aadhaar', data.mother_aadhaar),
+            kv('Guardian Name', data.guardian_name),
+            kv('Guardian Relation', data.guardian_relation),
+            kv('Guardian Mobile', data.guardian_mobile),
+            kv('Guardian Address', data.guardian_address),
+            kv('Emergency Contact', data.emergency_contact_name),
+            kv('Emergency Relation', data.emergency_contact_relation),
+            kv('Emergency Mobile', data.emergency_contact_mobile),
+          ])}
+          ${section('Admission & Fees', 'fa-receipt', [
+            kv('Application No', data.application_no),
+            kv('Applied Date', data.applied_date ? new Date(data.applied_date).toLocaleDateString() : ''),
+            kv('Status', data.status),
+            kv('Admission Fee Paid', data.admission_fee_paid),
+            kv('Admission Fee Amount', data.admission_fee_amount),
+            kv('Remarks', data.remarks),
+            kv('Rejection Reason', data.rejection_reason),
+          ])}
+          ${section('Documents', 'fa-folder-open', [
+            kv('Student Photo', data.student_photo_path),
+            kv('Birth Certificate', data.birth_certificate_path),
+            kv('TC Document', data.tc_document_path),
+            kv('Previous Year Marksheet', data.marksheet_path),
+            kv('Aadhaar Copy', data.aadhaar_copy_path),
+            kv('Caste Certificate', data.caste_certificate_path),
+            kv('Medical Certificate', data.medical_certificate_path),
+            kv('Migration Certificate', data.migration_certificate_path),
+            kv('Father Photo', data.father_photo_path),
+            kv('Mother Photo', data.mother_photo_path),
+          ])}
+        </div>
+      `;
+    }
+
+    document.getElementById('studentSearch').addEventListener('input', renderList);
+    loadStudentsPage();
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Add Staff - School ERP</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="../style.css" />
+
+  <style>
+    :root{
+      --staff-surface:#f7f8fb;
+      --staff-panel:#ffffff;
+      --staff-ink:#1b2a4a;
+      --staff-muted:#64748b;
+      --staff-line:rgba(27,42,74,.12);
+      --staff-field:#ffffff;
+      --staff-soft:#eef2ff;
+    }
+    html[data-theme="dark"]{
+      --staff-surface:#0b1220;
+      --staff-panel:#101b31;
+      --staff-ink:#eaf0ff;
+      --staff-muted:#a8b3cb;
+      --staff-line:rgba(255,255,255,.12);
+      --staff-field:#0f1b33;
+      --staff-soft:rgba(109,94,252,.18);
+    }
+    body{background:linear-gradient(180deg, var(--staff-surface), rgba(109,94,252,.08)); color:var(--staff-ink)}
+    .main-inner{background:var(--staff-surface); color:var(--staff-ink)}
+    .staff-panel{border:1px solid var(--staff-line); border-radius:8px; background:var(--staff-panel); box-shadow:0 18px 40px rgba(15,23,42,.08)}
+    .staff-title{font-weight:900; letter-spacing:0; color:var(--staff-ink)}
+    .staff-muted{color:var(--staff-muted)!important; font-weight:700}
+    .staff-chip{display:inline-flex; align-items:center; gap:8px; border:1px solid var(--staff-line); border-radius:999px; padding:7px 12px; background:var(--staff-field); color:var(--staff-ink); font-weight:800}
+    .progress-rail{height:10px; background:rgba(148,163,184,.24); border-radius:999px; overflow:hidden}
+    .progress-fill{height:100%; width:0; background:linear-gradient(90deg, #6d5efc, #22c55e); transition:width .2s ease}
+    .section-tabs{display:grid; grid-template-columns:repeat(5, minmax(150px,1fr)); gap:8px}
+    .section-tab{min-height:58px; border:1px solid var(--staff-line); border-radius:8px; background:var(--staff-field); color:var(--staff-muted); font-weight:900; text-align:left; padding:9px 11px}
+    .section-tab span{display:block; font-size:12px; font-weight:800; opacity:.75}
+    .section-tab.active{background:var(--staff-soft); color:var(--staff-ink); border-color:rgba(109,94,252,.5)}
+    .section-tab.done{border-color:rgba(34,197,94,.45)}
+    .section-head{border-bottom:1px solid var(--staff-line); padding-bottom:14px; margin-bottom:16px}
+    label.form-label{font-weight:850; color:var(--staff-ink); margin-bottom:.25rem}
+    .form-control,.form-select{background:var(--staff-field)!important; color:var(--staff-ink)!important; border-color:var(--staff-line)!important; border-radius:8px}
+    textarea.form-control{min-height:88px}
+    .form-control::placeholder{color:var(--staff-muted)}
+    .req{color:#dc2626; font-weight:900}
+    .error-text{min-height:18px; color:#dc2626; font-size:12px; font-weight:800}
+    .upload-note{font-size:12px; color:var(--staff-muted); font-weight:700}
+    .permission-grid,.weekday-grid{display:grid; grid-template-columns:repeat(3,minmax(150px,1fr)); gap:8px}
+    .check-tile{border:1px solid var(--staff-line); border-radius:8px; padding:10px 12px; background:var(--staff-field); font-weight:800; color:var(--staff-ink)}
+    .audit-log{max-height:260px; overflow:auto}
+    .audit-row{border-bottom:1px dashed var(--staff-line); padding:9px 0; color:var(--staff-muted); font-weight:700}
+    .audit-row strong{color:var(--staff-ink)}
+    .sticky-actions{position:sticky; bottom:0; z-index:4; background:linear-gradient(180deg, transparent, var(--staff-surface) 24%); padding-top:20px}
+    .review-card{border:1px solid var(--staff-line); border-radius:8px; background:var(--staff-field); padding:14px; height:100%}
+    .review-kv{display:grid; grid-template-columns:170px 1fr; gap:10px; padding:6px 0; border-bottom:1px dashed var(--staff-line)}
+    .review-kv:last-child{border-bottom:none}
+    .review-key{font-weight:900; color:var(--staff-muted)}
+    .review-val{font-weight:750; color:var(--staff-ink); word-break:break-word}
+    .theme-toggle{min-width:46px}
+    @media (max-width: 1200px){.section-tabs{grid-template-columns:repeat(3,minmax(150px,1fr))}}
+    @media (max-width: 768px){.section-tabs,.permission-grid,.weekday-grid{grid-template-columns:1fr}.review-kv{grid-template-columns:1fr; gap:2px}.main-inner{margin:10px}}
+  </style>
+</head>
+<body>
+  <div class="app-shell d-flex">
+    <nav id="sidebar" class="sidebar d-flex flex-column vh-100 position-sticky top-0">
+      <div class="sidebar-brand">
+        <div class="brand-mark">ERP</div>
+        <div class="brand-text"><strong>School ERP</strong><span>Admin Console</span></div>
+      </div>
+      <div class="px-2 pb-3">
+        <button class="btn btn-sm btn-soft rounded-pill" onclick="DashUI.sidebarToggle()" title="Collapse sidebar">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+      </div>
+      <div class="sidebar-nav nav flex-column gap-1 px-2 pb-3" style="overflow:auto;">
+        <a class="nav-link" href="./admin-dashboard.html"><i class="fa-solid fa-gauge-high"></i><span>Dashboard</span></a>
+        <a class="nav-link" href="./students.html"><i class="fa-solid fa-user-graduate"></i><span>Students</span></a>
+        <a class="nav-link" href="./admissions.html"><i class="fa-solid fa-file-signature"></i><span>Admissions</span></a>
+        <a class="nav-link" href="/staff"><i class="fa-solid fa-users"></i><span>Staff Directory</span></a>
+        <a class="nav-link active" href="/staff/add"><i class="fa-solid fa-user-tie"></i><span>Add Staff</span></a>
+        <a class="nav-link" href="/teachers"><i class="fa-solid fa-chalkboard-user"></i><span>Teachers</span></a>
+        <a class="nav-link" href="./admin-dashboard.html"><i class="fa-solid fa-calendar-check"></i><span>Attendance</span></a>
+        <a class="nav-link" href="./admin-dashboard.html"><i class="fa-solid fa-receipt"></i><span>Payroll</span></a>
+        <a class="nav-link" href="./admin-dashboard.html"><i class="fa-solid fa-shield-halved"></i><span>Access Control</span></a>
+        <a class="nav-link mt-2" href="#" onclick="DashUI.logout()"><i class="fa-solid fa-right-from-bracket"></i><span>Logout</span></a>
+      </div>
+    </nav>
+
+    <main class="main flex-fill">
+      <div class="topbar py-3">
+        <div class="container-fluid px-3 px-md-4">
+          <div class="d-flex align-items-center justify-content-between gap-3 flex-wrap">
+            <div>
+              <h4 class="m-0 staff-title"><i class="fa-solid fa-user-plus me-2"></i>Add Staff</h4>
+              <div class="staff-muted">Register teaching, non-teaching, administrative, technical, and management staff.</div>
+            </div>
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+              <span class="staff-chip"><i class="fa-solid fa-id-card"></i><span id="employeeBadge">EMP-</span></span>
+              <button class="btn btn-soft rounded-pill theme-toggle" type="button" id="themeBtn" title="Toggle theme"><i class="fa-solid fa-moon"></i></button>
+              <button class="btn btn-soft rounded-pill" onclick="location.href='/staff'"><i class="fa-solid fa-arrow-left me-2"></i>Staff Directory</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="container-fluid">
+        <div class="main-inner">
+          <div class="p-3 p-md-4">
+            <div class="row g-3 mb-3">
+              <div class="col-12 col-xl-8">
+                <div class="staff-panel p-3 h-100">
+                  <div class="d-flex align-items-center justify-content-between gap-3 flex-wrap mb-3">
+                    <div>
+                      <h5 class="staff-title mb-1">Staff Registration Progress</h5>
+                      <div class="staff-muted">Fields validate as you type. Drafts are stored locally until submission.</div>
+                    </div>
+                    <div class="staff-chip"><i class="fa-solid fa-circle-check"></i><span id="completionLabel">0% complete</span></div>
+                  </div>
+                  <div class="progress-rail"><div class="progress-fill" id="progressFill"></div></div>
+                  <div class="section-tabs mt-3" id="sectionTabs"></div>
+                </div>
+              </div>
+              <div class="col-12 col-xl-4">
+                <div class="staff-panel p-3 h-100">
+                  <div class="d-flex align-items-center justify-content-between mb-2">
+                    <h5 class="staff-title mb-0"><i class="fa-solid fa-clock-rotate-left me-2"></i>Audit Log</h5>
+                    <span class="badge badge-soft rounded-pill" id="auditCount">0</span>
+                  </div>
+                  <div class="staff-muted mb-2">Changes, drafts, resets, and submissions are tracked in this session.</div>
+                  <div class="audit-log" id="auditLog"></div>
+                </div>
+              </div>
+            </div>
+
+            <form id="staffForm" class="staff-panel p-3 p-md-4" enctype="multipart/form-data" novalidate>
+              <div id="sectionsMount"></div>
+              <div id="statusBox" class="mt-3"></div>
+              <div class="sticky-actions">
+                <div class="staff-panel p-3 d-flex align-items-center justify-content-between gap-2 flex-wrap">
+                  <button class="btn btn-soft rounded-pill" type="button" id="prevBtn"><i class="fa-solid fa-arrow-left me-2"></i>Previous</button>
+                  <div class="d-flex gap-2 flex-wrap">
+                    <button class="btn btn-soft rounded-pill" type="button" id="draftBtn"><i class="fa-solid fa-floppy-disk me-2"></i>Save Draft</button>
+                    <button class="btn btn-soft rounded-pill" type="button" id="resetBtn"><i class="fa-solid fa-rotate-left me-2"></i>Reset Form</button>
+                    <button class="btn btn-accent rounded-pill" type="button" id="nextBtn">Next<i class="fa-solid fa-arrow-right ms-2"></i></button>
+                    <button class="btn btn-success rounded-pill" type="submit" id="submitBtn" hidden><i class="fa-solid fa-check-double me-2"></i>Submit</button>
+                  </div>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="../script.js"></script>
+  <script>
+    DashUI.ensureRole('admin');
+    DashUI.hydrateSidebarCollapse();
+
+    const STORAGE_KEY = 'school_erp_staff_draft_v1';
+    const AUDIT_KEY = 'school_erp_staff_audit_v1';
+    const editId = new URLSearchParams(location.search).get('edit');
+    const state = { section: 0, audit: [], editMode: !!editId };
+    const sections = [
+      { title:'Personal Information', icon:'fa-id-card', fields:[
+        f('employee_id','Employee ID','text',{required:true, readonly:true}), f('first_name','First Name','text',{required:true, cls:'js-name'}), f('middle_name','Middle Name','text',{cls:'js-name'}), f('last_name','Last Name','text',{required:true, cls:'js-name'}),
+        sel('gender','Gender',['Male','Female','Other','Prefer not to say'], true), f('date_of_birth','Date of Birth','date',{required:true}), sel('blood_group','Blood Group',['A+','A-','B+','B-','AB+','AB-','O+','O-','Unknown']), sel('marital_status','Marital Status',['Single','Married','Divorced','Widowed']),
+        search('nationality','Nationality',['Indian','American','British','Canadian','Australian','Nepalese','Sri Lankan','Other']), f('aadhaar_number','Aadhaar Number','text',{cls:'js-digits', max:'12', exact:'12'}), f('pan_number','PAN Number','text',{cls:'js-pan', max:'10'}), file('profile_photo','Profile Photo Upload','image/jpeg,image/png',2),
+        file('signature_upload','Signature Upload','image/jpeg,image/png',2)
+      ]},
+      { title:'Contact Information', icon:'fa-address-book', fields:[
+        f('mobile_number','Mobile Number','tel',{required:true, cls:'js-digits', max:'10', exact:'10'}), f('alternate_mobile_number','Alternate Mobile Number','tel',{cls:'js-digits', max:'10', exact:'10'}), f('official_email','Official Email','email',{required:true, cls:'js-email'}), f('personal_email','Personal Email','email',{cls:'js-email'}),
+        f('emergency_contact_name','Emergency Contact Name','text',{required:true, cls:'js-name'}), f('emergency_contact_number','Emergency Contact Number','tel',{required:true, cls:'js-digits', max:'10', exact:'10'})
+      ]},
+      { title:'Address Information', icon:'fa-location-dot', fields:[
+        area('current_address','Current Address', true), area('permanent_address','Permanent Address', true), f('city','City','text',{required:true, cls:'js-name'}), search('state','State',['Andhra Pradesh','Delhi','Gujarat','Karnataka','Maharashtra','Rajasthan','Tamil Nadu','Telangana','Uttar Pradesh','West Bengal'], true),
+        search('country','Country',['India','United States','United Kingdom','Canada','Australia','Other'], true), f('pin_code','PIN Code','text',{required:true, cls:'js-digits', max:'6', exact:'6'})
+      ]},
+      { title:'Employment Details', icon:'fa-briefcase', fields:[
+        search('employee_type','Employee Type',['Teaching Staff','Non-Teaching Staff','Administrative Staff','Technical Staff','Management Staff'], true), search('department','Department',['Academics','Administration','Finance','Human Resources','IT','Library','Transport','Examination','Operations'], true), search('designation','Designation',['Teacher','Senior Teacher','Coordinator','Accountant','Receptionist','Lab Assistant','IT Administrator','Principal','Vice Principal','Manager'], true),
+        search('reporting_manager','Reporting Manager',['Principal','Vice Principal','HR Manager','Academic Coordinator','Operations Head']), f('date_of_joining','Date of Joining','date',{required:true}), sel('employment_status','Employment Status',['Active','Probation','Contract','Resigned'], true), search('work_location','Work Location / Branch',['Main Campus','Primary Wing','Senior Wing','City Branch','Remote Office'], true),
+        search('shift_timing','Shift Timing',['08:00 AM - 04:00 PM','09:00 AM - 05:00 PM','10:00 AM - 06:00 PM','Evening Shift','Custom']), search('employee_category','Employee Category',['Full Time','Part Time','Visiting','Contractual','Consultant'], true)
+      ]},
+      { title:'Academic Qualifications', icon:'fa-graduation-cap', fields:[
+        search('qualification_level','Qualification Level',['Diploma','Graduate','Post Graduate','Doctorate','Professional Certification'], true), f('degree_name','Degree Name','text',{required:true, cls:'js-text'}), f('specialization','Specialization','text',{cls:'js-text'}), f('university_board','University/Board','text',{required:true, cls:'js-text'}),
+        f('passing_year','Passing Year','number',{required:true, min:'1950', max:'2035'}), f('percentage_cgpa','Percentage/CGPA','text',{required:true, cls:'js-score'}), file('upload_certificates','Upload Certificates','application/pdf,image/jpeg,image/png',8)
+      ]},
+      { title:'Professional Information', icon:'fa-user-gear', fields:[
+        f('total_experience','Total Experience','number',{required:true, min:'0', step:'0.1'}), f('previous_organization','Previous Organization','text',{cls:'js-text'}), f('previous_designation','Previous Designation','text',{cls:'js-text'}), area('skills','Skills'),
+        area('certifications','Certifications'), file('resume_cv','Resume/CV Upload','application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document',5)
+      ]},
+      { title:'Salary & Payroll Details', icon:'fa-money-check-dollar', fields:[
+        f('basic_salary','Basic Salary','number',{required:true, min:'0'}), f('allowances','Allowances','number',{min:'0'}), f('bank_name','Bank Name','text',{required:true, cls:'js-text'}), f('account_number','Account Number','text',{required:true, cls:'js-digits', max:'18'}),
+        f('ifsc_code','IFSC Code','text',{required:true, cls:'js-ifsc', max:'11'}), f('uan_number','UAN Number','text',{cls:'js-digits', max:'12', exact:'12'}), f('pf_number','PF Number','text',{cls:'js-code'}), f('esic_number','ESIC Number','text',{cls:'js-code'}), area('tax_information','Tax Information')
+      ]},
+      { title:'System Access & Authentication', icon:'fa-shield-halved', fields:[
+        f('username','Username','text',{required:true, cls:'js-username'}), f('password','Password','password',{required:true, minLength:'8'}), f('confirm_password','Confirm Password','password',{required:true, minLength:'8'}), search('role_assignment','Role Assignment',['Teacher','Class Teacher','Admin Staff','HR Admin','Payroll Admin','IT Support','Branch Manager','Principal'], true),
+        checks('permissions','Permissions',['Student Records','Attendance','Exams & Results','Fee View','Payroll','Reports','Inventory','Settings']), toggle('two_factor_authentication','Two-Factor Authentication Option')
+      ]},
+      { title:'Attendance & Leave Configuration', icon:'fa-calendar-check', fields:[
+        search('attendance_method','Attendance Method',['Biometric','RFID Card','Mobile App','Manual Register','Face Recognition'], true), f('leave_balance','Leave Balance','number',{required:true, min:'0'}), checks('weekly_off_days','Weekly Off Days',['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'], 'weekday-grid'), search('holiday_calendar_assignment','Holiday Calendar Assignment',['Academic Calendar','Administrative Calendar','Technical Staff Calendar','Branch Calendar'], true)
+      ]},
+      { title:'Documents Upload', icon:'fa-folder-open', fields:[
+        file('aadhaar_card','Aadhaar Card','application/pdf,image/jpeg,image/png',5), file('pan_card','PAN Card','application/pdf,image/jpeg,image/png',5), file('educational_certificates','Educational Certificates','application/pdf,image/jpeg,image/png',10), file('experience_letters','Experience Letters','application/pdf,image/jpeg,image/png',10),
+        file('appointment_letter','Appointment Letter','application/pdf,image/jpeg,image/png',5), file('resume','Resume','application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document',5), file('passport_size_photo','Passport Size Photo','image/jpeg,image/png',2), file('other_documents','Other Documents','application/pdf,image/jpeg,image/png',10)
+      ]},
+      { title:'Additional Information', icon:'fa-notes-medical', fields:[
+        area('notes_remarks','Notes/Remarks'), area('medical_information','Medical Information'), area('disability_information','Disability Information'), f('languages_known','Languages Known','text',{cls:'js-text'})
+      ]},
+      { title:'Review & Submit', icon:'fa-clipboard-check', review:true }
+    ];
+
+    function f(id,label,type,opts={}){ return {id,label,type,opts}; }
+    function sel(id,label,options,required=false){ return {id,label,type:'select',options,opts:{required}}; }
+    function search(id,label,options,required=false){ return {id,label,type:'search',options,opts:{required}}; }
+    function area(id,label,required=false){ return {id,label,type:'textarea',opts:{required}}; }
+    function file(id,label,accept,maxMb){ return {id,label,type:'file',opts:{accept,maxMb}}; }
+    function checks(id,label,options,gridClass='permission-grid'){ return {id,label,type:'checks',options,gridClass,opts:{}}; }
+    function toggle(id,label){ return {id,label,type:'toggle',opts:{}}; }
+    function $(id){ return document.getElementById(id); }
+    function esc(v){ return String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+    function val(id){ return String($(id)?.value || '').trim(); }
+
+    function generateEmployeeId(){
+      const now = new Date();
+      return `STF${String(now.getFullYear()).slice(2)}${String(now.getMonth()+1).padStart(2,'0')}${String(Math.floor(100 + Math.random()*900))}`;
+    }
+
+    function fieldHtml(field){
+      const req = field.opts?.required ? '<span class="req">*</span>' : '';
+      const common = `id="${field.id}" name="${field.id}" ${field.opts?.required ? 'required' : ''}`;
+      const col = field.type === 'textarea' || field.type === 'checks' ? 'col-12' : 'col-12 col-md-6 col-xl-4';
+      if(field.type === 'select'){
+        return wrap(col, field, `<select class="form-select" ${common}><option value="">Select</option>${field.options.map(o=>`<option>${esc(o)}</option>`).join('')}</select>`);
+      }
+      if(field.type === 'search'){
+        const list = `${field.id}_list`;
+        return wrap(col, field, `<input class="form-control" list="${list}" ${common} placeholder="Search or select" /><datalist id="${list}">${field.options.map(o=>`<option value="${esc(o)}"></option>`).join('')}</datalist>`);
+      }
+      if(field.type === 'textarea'){
+        return wrap(col, field, `<textarea class="form-control" ${common}></textarea>`);
+      }
+      if(field.type === 'file'){
+        return wrap(col, field, `<input class="form-control js-file" type="file" ${common} accept="${esc(field.opts.accept)}" data-max-mb="${field.opts.maxMb}" /><div class="upload-note mt-1">Accepted: ${esc(field.opts.accept)}. Max ${field.opts.maxMb}MB.</div>`);
+      }
+      if(field.type === 'checks'){
+        return `<div class="col-12"><label class="form-label">${esc(field.label)} ${req}</label><div class="${field.gridClass}">${field.options.map(option=>`
+          <label class="check-tile"><input class="form-check-input me-2" type="checkbox" name="${field.id}" value="${esc(option)}"> ${esc(option)}</label>
+        `).join('')}</div><div class="error-text" id="err_${field.id}"></div></div>`;
+      }
+      if(field.type === 'toggle'){
+        return `<div class="col-12 col-md-6 col-xl-4"><label class="form-label d-block">${esc(field.label)}</label><label class="check-tile d-flex align-items-center justify-content-between"><span>Enable 2FA</span><input class="form-check-input" type="checkbox" id="${field.id}" name="${field.id}" value="Enabled"></label><div class="error-text" id="err_${field.id}"></div></div>`;
+      }
+      const isNumber = field.type === 'number';
+      const attrs = [
+        `class="form-control ${field.opts?.cls || ''}"`, common, `type="${field.type}"`,
+        field.opts?.readonly ? 'readonly' : '',
+        field.opts?.max && !isNumber ? `maxlength="${field.opts.max}"` : '',
+        field.opts?.min ? `min="${field.opts.min}"` : '',
+        field.opts?.max && isNumber ? `max="${field.opts.max}"` : '',
+        field.opts?.step ? `step="${field.opts.step}"` : '', field.opts?.minLength ? `minlength="${field.opts.minLength}"` : ''
+      ].filter(Boolean).join(' ');
+      return wrap(col, field, `<input ${attrs} />`);
+
+      function wrap(colClass, item, control){
+        return `<div class="${colClass}"><label class="form-label" for="${item.id}">${esc(item.label)} ${req}</label>${control}<div class="error-text" id="err_${item.id}"></div></div>`;
+      }
+    }
+
+    function render(){
+      $('sectionTabs').innerHTML = sections.map((section, index) => `
+        <button class="section-tab" type="button" data-tab="${index}">
+          <span>${index + 1 < sections.length ? 'Section ' + (index + 1) : 'Final'}</span>
+          <i class="fa-solid ${section.icon} me-2"></i>${esc(section.title)}
+        </button>
+      `).join('');
+      $('sectionsMount').innerHTML = sections.map((section, index) => `
+        <section data-section="${index}" ${index ? 'hidden' : ''}>
+          <div class="section-head">
+            <h5 class="staff-title mb-1"><i class="fa-solid ${section.icon} me-2"></i>${esc(section.title)}</h5>
+            <div class="staff-muted">${section.review ? 'Review the registration packet before final submission.' : 'Complete the staff details for this section.'}</div>
+          </div>
+          ${section.review ? '<div id="reviewMount" class="row g-3"></div>' : `<div class="row g-2">${section.fields.map(fieldHtml).join('')}</div>`}
+        </section>
+      `).join('');
+    }
+
+    function setSection(index){
+      state.section = Math.max(0, Math.min(index, sections.length - 1));
+      document.querySelectorAll('[data-section]').forEach(el => el.hidden = Number(el.dataset.section) !== state.section);
+      document.querySelectorAll('.section-tab').forEach((el, i) => {
+        el.classList.toggle('active', i === state.section);
+        el.classList.toggle('done', i < state.section);
+      });
+      $('prevBtn').style.visibility = state.section === 0 ? 'hidden' : 'visible';
+      $('nextBtn').hidden = state.section === sections.length - 1;
+      $('submitBtn').hidden = state.section !== sections.length - 1;
+      if(sections[state.section].review) buildReview();
+      updateProgress();
+      window.scrollTo({top:0, behavior:'smooth'});
+    }
+
+    function allFields(){
+      return sections.flatMap(s => s.fields || []);
+    }
+
+    function showErr(id, message){
+      const el = $(id);
+      const err = $(`err_${id}`);
+      if(el) el.classList.toggle('is-invalid', !!message);
+      if(err) err.textContent = message || '';
+    }
+
+    function validateField(field){
+      if(field.type === 'checks') return true;
+      const el = $(field.id);
+      if(!el) return true;
+      showErr(field.id, '');
+      const required = !!field.opts?.required;
+      if(field.type === 'file'){
+        const file = el.files?.[0];
+        if(required && !file){ showErr(field.id, 'Required'); return false; }
+        if(!file) return true;
+        const allowed = (el.accept || '').split(',').map(x => x.trim()).filter(Boolean);
+        if(allowed.length && !allowed.includes(file.type)){ showErr(field.id, 'File type is not allowed'); return false; }
+        const maxMb = Number(el.dataset.maxMb || 5);
+        if(file.size > maxMb * 1024 * 1024){ showErr(field.id, `File must be under ${maxMb}MB`); return false; }
+        return true;
+      }
+      if(required && !val(field.id)){ showErr(field.id, 'Required'); return false; }
+      if(!val(field.id)) return true;
+      if(el.classList.contains('js-email') && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(val(field.id))){ showErr(field.id, 'Enter a valid email address'); return false; }
+      if(el.classList.contains('js-digits')){
+        if(!/^\d+$/.test(val(field.id))){ showErr(field.id, 'Only digits are allowed'); return false; }
+        const exact = Number(field.opts?.exact || 0);
+        if(exact && val(field.id).length !== exact){ showErr(field.id, `Must be exactly ${exact} digits`); return false; }
+      }
+      if(el.classList.contains('js-pan') && !/^[A-Z]{5}[0-9]{4}[A-Z]$/.test(val(field.id))){ showErr(field.id, 'PAN format must be ABCDE1234F'); return false; }
+      if(el.classList.contains('js-ifsc') && !/^[A-Z]{4}0[A-Z0-9]{6}$/.test(val(field.id))){ showErr(field.id, 'Enter a valid IFSC code'); return false; }
+      if(field.id === 'confirm_password' && val('password') !== val('confirm_password')){ showErr(field.id, 'Passwords do not match'); return false; }
+      if(field.id === 'date_of_birth'){
+        const dob = new Date(val(field.id));
+        const age = new Date().getFullYear() - dob.getFullYear();
+        if(Number.isNaN(dob.getTime()) || age < 18 || age > 75){ showErr(field.id, 'Staff age must be between 18 and 75'); return false; }
+      }
+      if(field.id === 'passing_year'){
+        const year = Number(val(field.id));
+        if(year < 1950 || year > 2035){ showErr(field.id, 'Enter a valid passing year'); return false; }
+      }
+      return true;
+    }
+
+    function validateSection(index){
+      let ok = true;
+      (sections[index].fields || []).forEach(field => { if(!validateField(field)) ok = false; });
+      return ok;
+    }
+
+    function updateProgress(){
+      const fields = allFields().filter(field => field.type !== 'checks' && field.type !== 'toggle' && field.type !== 'file');
+      const complete = fields.filter(field => val(field.id)).length;
+      const pct = Math.round((complete / fields.length) * 100);
+      $('progressFill').style.width = pct + '%';
+      $('completionLabel').textContent = pct + '% complete';
+    }
+
+    function collectData(){
+      const data = {};
+      allFields().forEach(field => {
+        if(field.type === 'checks'){
+          data[field.id] = Array.from(document.querySelectorAll(`[name="${field.id}"]:checked`)).map(el => el.value);
+        }else if(field.type === 'toggle'){
+          data[field.id] = $(field.id)?.checked ? 'Enabled' : 'Disabled';
+        }else if(field.type === 'file'){
+          data[field.id] = $(field.id)?.files?.[0]?.name || '';
+        }else{
+          data[field.id] = val(field.id);
+        }
+      });
+      return data;
+    }
+
+    function applyData(data){
+      Object.entries(data || {}).forEach(([id, value]) => {
+        const el = $(id);
+        if(el && el.type !== 'file' && el.type !== 'checkbox') el.value = value;
+        if(Array.isArray(value)){
+          document.querySelectorAll(`[name="${id}"]`).forEach(input => input.checked = value.includes(input.value));
+        }
+        if(el && el.type === 'checkbox') el.checked = value === 'Enabled';
+      });
+      if(!val('employee_id')) $('employee_id').value = generateEmployeeId();
+      $('employeeBadge').textContent = val('employee_id');
+      updateProgress();
+    }
+
+    function buildReview(){
+      const data = collectData();
+      $('reviewMount').innerHTML = sections.filter(s => !s.review).map(section => `
+        <div class="col-12 col-xl-6">
+          <div class="review-card">
+            <h6 class="staff-title mb-2"><i class="fa-solid ${section.icon} me-2"></i>${esc(section.title)}</h6>
+            ${section.fields.map(field => reviewKv(field.label, Array.isArray(data[field.id]) ? data[field.id].join(', ') : data[field.id])).join('')}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function reviewKv(key, value){
+      return `<div class="review-kv"><div class="review-key">${esc(key)}</div><div class="review-val">${esc(value || '-')}</div></div>`;
+    }
+
+    function addAudit(action, detail){
+      state.audit.unshift({ action, detail, at:new Date().toLocaleString() });
+      state.audit = state.audit.slice(0, 30);
+      localStorage.setItem(AUDIT_KEY, JSON.stringify(state.audit));
+      renderAudit();
+    }
+
+    function renderAudit(){
+      $('auditCount').textContent = state.audit.length;
+      $('auditLog').innerHTML = state.audit.length ? state.audit.map(item => `
+        <div class="audit-row"><strong>${esc(item.action)}</strong><br>${esc(item.detail)}<br><small>${esc(item.at)}</small></div>
+      `).join('') : '<div class="staff-muted">No changes recorded yet.</div>';
+    }
+
+    function saveDraft(){
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(collectData()));
+      addAudit('Draft saved', val('employee_id'));
+      $('statusBox').innerHTML = '<div class="alert alert-success fw-bold">Draft saved successfully.</div>';
+    }
+
+    function resetForm(){
+      if(!confirm('Reset this staff form and clear the draft?')) return;
+      $('staffForm').reset();
+      localStorage.removeItem(STORAGE_KEY);
+      $('employee_id').value = generateEmployeeId();
+      $('employeeBadge').textContent = val('employee_id');
+      document.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+      document.querySelectorAll('.error-text').forEach(el => el.textContent = '');
+      addAudit('Form reset', val('employee_id'));
+      setSection(0);
+      updateProgress();
+    }
+
+    function wireInputs(){
+      document.querySelectorAll('.section-tab').forEach(btn => btn.addEventListener('click', () => setSection(Number(btn.dataset.tab))));
+      $('prevBtn').addEventListener('click', () => setSection(state.section - 1));
+      $('nextBtn').addEventListener('click', () => { if(validateSection(state.section)) setSection(state.section + 1); });
+      $('draftBtn').addEventListener('click', saveDraft);
+      $('resetBtn').addEventListener('click', resetForm);
+      $('themeBtn').addEventListener('click', () => {
+        const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+        document.documentElement.dataset.theme = next;
+        localStorage.setItem('school_erp_theme', next);
+        $('themeBtn').innerHTML = next === 'dark' ? '<i class="fa-solid fa-sun"></i>' : '<i class="fa-solid fa-moon"></i>';
+      });
+      document.querySelectorAll('input, select, textarea').forEach(el => {
+        el.addEventListener('input', () => {
+          if(el.classList.contains('js-digits')) el.value = el.value.replace(/\D/g,'').slice(0, Number(el.maxLength > 0 ? el.maxLength : 99));
+          if(el.classList.contains('js-pan') || el.classList.contains('js-ifsc')) el.value = el.value.replace(/[^A-Za-z0-9]/g,'').toUpperCase().slice(0, Number(el.maxLength || 99));
+          if(el.classList.contains('js-name')) el.value = el.value.replace(/[^A-Za-z .'-]/g,'');
+          if(el.classList.contains('js-code')) el.value = el.value.replace(/[^A-Za-z0-9/-]/g,'').toUpperCase();
+          updateProgress();
+        });
+        el.addEventListener('change', () => addAudit('Field updated', el.name || el.id));
+      });
+      $('staffForm').addEventListener('submit', async event => {
+        event.preventDefault();
+        let ok = true;
+        for(let i = 0; i < sections.length - 1; i++){
+          if(!validateSection(i)) ok = false;
+        }
+        if(!ok){
+          const bad = document.querySelector('.is-invalid');
+          const badSection = bad?.closest('[data-section]')?.dataset.section;
+          if(badSection) setSection(Number(badSection));
+          $('statusBox').innerHTML = '<div class="alert alert-danger fw-bold">Please fix highlighted fields before submitting.</div>';
+          return;
+        }
+        const submitBtn = $('submitBtn');
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i>Saving';
+        try{
+          const payload = collectData();
+          const endpoint = state.editMode ? `/admin/staff/${encodeURIComponent(editId)}` : '/admin/staff';
+          const method = state.editMode ? 'PUT' : 'POST';
+          const result = await DashAPI.apiCall(endpoint, {
+            method,
+            body: JSON.stringify(payload)
+          });
+          localStorage.removeItem(STORAGE_KEY);
+          addAudit(state.editMode ? 'Staff updated' : 'Staff submitted', `${result.staff?.employeeId || val('employee_id')} - ${payload.first_name} ${payload.last_name}`);
+          $('statusBox').innerHTML = '<div class="alert alert-success fw-bold">Staff record saved successfully. Redirecting to Staff Directory...</div>';
+          setTimeout(() => { window.location.href = '/staff'; }, 800);
+        }catch(err){
+          $('statusBox').innerHTML = `<div class="alert alert-danger fw-bold">Unable to save staff: ${esc(err.message)}</div>`;
+        }finally{
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = '<i class="fa-solid fa-check-double me-2"></i>Submit';
+        }
+      });
+    }
+
+    function fromApiStaff(item){
+      const docs = item.documents || {};
+      return {
+        employee_id: item.employeeId,
+        first_name: item.firstName,
+        middle_name: item.middleName,
+        last_name: item.lastName,
+        gender: item.gender,
+        date_of_birth: item.dateOfBirth ? item.dateOfBirth.slice(0,10) : '',
+        blood_group: item.bloodGroup,
+        marital_status: item.maritalStatus,
+        nationality: item.nationality,
+        aadhaar_number: item.aadhaarNumber,
+        pan_number: item.panNumber,
+        mobile_number: item.mobileNumber,
+        alternate_mobile_number: item.alternateMobileNumber,
+        official_email: item.officialEmail || item.userId?.email,
+        personal_email: item.personalEmail,
+        emergency_contact_name: item.emergencyContactName,
+        emergency_contact_number: item.emergencyContactNumber,
+        current_address: item.currentAddress,
+        permanent_address: item.permanentAddress,
+        city: item.city,
+        state: item.state,
+        country: item.country,
+        pin_code: item.pinCode,
+        employee_type: item.employeeType,
+        department: item.department,
+        designation: item.designation,
+        reporting_manager: item.reportingManager,
+        date_of_joining: item.dateOfJoining ? item.dateOfJoining.slice(0,10) : '',
+        employment_status: item.employmentStatus || item.status,
+        work_location: item.workLocation,
+        shift_timing: item.shiftTiming,
+        employee_category: item.employeeCategory,
+        qualification_level: item.qualificationLevel,
+        degree_name: item.degreeName,
+        specialization: item.specialization,
+        university_board: item.universityBoard,
+        passing_year: item.passingYear,
+        percentage_cgpa: item.percentageCgpa,
+        total_experience: item.totalExperience,
+        previous_organization: item.previousOrganization,
+        previous_designation: item.previousDesignation,
+        skills: item.skills,
+        certifications: item.certifications,
+        basic_salary: item.salary,
+        allowances: item.allowances,
+        bank_name: item.bankName,
+        account_number: item.accountNumber,
+        ifsc_code: item.ifscCode,
+        uan_number: item.uanNumber,
+        pf_number: item.pfNumber,
+        esic_number: item.esicNumber,
+        tax_information: item.taxInformation,
+        role_assignment: item.roleAssignment,
+        permissions: item.permissions || [],
+        two_factor_authentication: item.twoFactorAuthentication,
+        attendance_method: item.attendanceMethod,
+        leave_balance: item.leaveBalance,
+        weekly_off_days: item.weeklyOffDays || [],
+        holiday_calendar_assignment: item.holidayCalendarAssignment,
+        notes_remarks: item.notesRemarks,
+        medical_information: item.medicalInformation,
+        disability_information: item.disabilityInformation,
+        languages_known: item.languagesKnown,
+        profile_photo: docs.profile_photo || item.profilePhoto,
+        aadhaar_card: docs.aadhaar_card,
+        pan_card: docs.pan_card,
+        resume: docs.resume,
+        educational_certificates: docs.educational_certificates,
+        experience_letters: docs.experience_letters
+      };
+    }
+
+    async function loadEditRecord(){
+      if(!editId) return;
+      try{
+        const item = await DashAPI.apiCall(`/admin/staff/${encodeURIComponent(editId)}`);
+        applyData(fromApiStaff(item));
+        $('password').required = false;
+        $('confirm_password').required = false;
+        const passwordField = allFields().find(field => field.id === 'password');
+        const confirmField = allFields().find(field => field.id === 'confirm_password');
+        if(passwordField) passwordField.opts.required = false;
+        if(confirmField) confirmField.opts.required = false;
+        $('password').placeholder = 'Leave blank to keep existing password';
+        $('confirm_password').placeholder = 'Leave blank to keep existing password';
+        document.querySelector('.topbar h4').innerHTML = '<i class="fa-solid fa-user-pen me-2"></i>Edit Staff';
+        addAudit('Edit loaded', item.employeeId);
+      }catch(err){
+        $('statusBox').innerHTML = `<div class="alert alert-danger fw-bold">Unable to load staff record: ${esc(err.message)}</div>`;
+      }
+    }
+
+    render();
+    state.audit = JSON.parse(localStorage.getItem(AUDIT_KEY) || '[]');
+    renderAudit();
+    const storedTheme = localStorage.getItem('school_erp_theme') || 'light';
+    document.documentElement.dataset.theme = storedTheme;
+    $('themeBtn').innerHTML = storedTheme === 'dark' ? '<i class="fa-solid fa-sun"></i>' : '<i class="fa-solid fa-moon"></i>';
+    applyData(JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'));
+    wireInputs();
+    if(!val('employee_id')){
+      $('employee_id').value = generateEmployeeId();
+      $('employeeBadge').textContent = val('employee_id');
+    }
+    setSection(0);
+    loadEditRecord();
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

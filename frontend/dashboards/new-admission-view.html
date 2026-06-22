@@ -1,0 +1,244 @@
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admission View - School ERP</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
+
+  <link rel="stylesheet" href="../style.css" />
+  <style>
+    body{background:rgba(27,42,74,.04)}
+    .card-glass-light{background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.10); border-radius:18px;}
+    .kv{display:grid; grid-template-columns: 220px 1fr; gap:10px; padding:8px 0; border-bottom:1px dashed rgba(27,42,74,.15)}
+    .kv:last-child{border-bottom:none}
+    .key{font-weight:800; color:rgba(27,42,74,.7)}
+    .val{color:rgba(27,42,74,.95); word-break:break-word}
+  </style>
+</head>
+<body>
+  <div class="app-shell d-flex">
+    <nav id="sidebar" class="sidebar d-flex flex-column vh-100 position-sticky top-0">
+      <div class="sidebar-brand">
+        <div class="brand-mark">🏫</div>
+        <div class="brand-text"><strong>School ERP</strong><span>Admin Console</span></div>
+      </div>
+      <div class="px-2 pb-3">
+        <button class="btn btn-sm btn-soft rounded-pill" onclick="DashUI.sidebarToggle()" title="Collapse sidebar">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+      </div>
+      <div class="sidebar-nav nav flex-column gap-1 px-2 pb-3" style="overflow:auto;">
+        <a class="nav-link" href="#" data-nav="dashboard" onclick="AppViews.render('dashboard')">
+          <i class="fa-solid fa-gauge-high"></i><span>Dashboard</span>
+        </a>
+        <a class="nav-link" href="./students.html" data-nav="students">
+          <i class="fa-solid fa-user-graduate"></i><span>Students</span>
+        </a>
+        <a class="nav-link" href="./admissions.html" data-nav="admissions">
+          <i class="fa-solid fa-file-signature"></i><span>Admissions</span>
+        </a>
+        <a class="nav-link" href="#" onclick="adminNavigate('attendance')"><i class="fa-solid fa-calendar-check"></i><span>Attendance</span></a>
+        <a class="nav-link" href="#" onclick="adminNavigate('classes')"><i class="fa-solid fa-layer-group"></i><span>Classes</span></a>
+        <a class="nav-link" href="#" onclick="adminNavigate('subjects')"><i class="fa-solid fa-book"></i><span>Subjects</span></a>
+        <a class="nav-link" href="#" onclick="adminNavigate('teachers')"><i class="fa-solid fa-chalkboard-user"></i><span>Teachers</span></a>
+        <a class="nav-link mt-2" href="#" onclick="DashUI.logout()"><i class="fa-solid fa-right-from-bracket"></i><span>Logout</span></a>
+      </div>
+    </nav>
+
+    <main class="main flex-fill">
+      <div class="topbar py-3">
+        <div class="container-fluid px-3 px-md-4">
+          <div class="d-flex align-items-center justify-content-between gap-3">
+            <div>
+              <h4 class="m-0 glass-title"><i class="fa-solid fa-file-signature me-2"></i>Admission Application</h4>
+              <div class="text-muted" style="color:rgba(27,42,74,.65)!important; font-weight:800;">Read-only details</div>
+            </div>
+            <div class="d-flex gap-2">
+              <button class="btn btn-soft rounded-pill" onclick="location.href='admissions.html'">
+                <i class="fa-solid fa-arrow-left me-2"></i>Back
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="container-fluid">
+        <div class="p-3 p-md-4">
+          <div id="statusBadge" class="mb-3"></div>
+
+          <div class="row g-3">
+            <div class="col-12 col-lg-6">
+              <div class="card-glass-light p-3">
+                <div class="fw-bold mb-2">Student Information</div>
+                <div id="studentInfo"></div>
+              </div>
+            </div>
+            <div class="col-12 col-lg-6">
+              <div class="card-glass-light p-3">
+                <div class="fw-bold mb-2">Academic Details</div>
+                <div id="academicInfo"></div>
+              </div>
+            </div>
+            <div class="col-12 col-lg-6">
+              <div class="card-glass-light p-3">
+                <div class="fw-bold mb-2">Address & Contact</div>
+                <div id="addressInfo"></div>
+              </div>
+            </div>
+            <div class="col-12 col-lg-6">
+              <div class="card-glass-light p-3">
+                <div class="fw-bold mb-2">Parent / Guardian</div>
+                <div id="parentInfo"></div>
+              </div>
+            </div>
+            <div class="col-12">
+              <div class="card-glass-light p-3">
+                <div class="fw-bold mb-2">Documents</div>
+                <div id="docsInfo"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <script src="../script.js"></script>
+  <script>
+    DashUI.ensureRole('admin');
+    DashUI.hydrateSidebarCollapse();
+
+    function $(id){ return document.getElementById(id); }
+
+    function kvHtml(key, val){
+      const v = (val === null || val === undefined || val === '') ? '—' : String(val);
+      return `<div class="kv"><div class="key">${key}</div><div class="val">${v}</div></div>`;
+    }
+
+    function statusToBadge(status){
+      const s = status || 'pending';
+      const map = {
+        pending: {cls:'badge-pending', label:'Pending'},
+        under_review: {cls:'badge-under-review', label:'Under Review'},
+        approved: {cls:'badge-approved', label:'Approved'},
+        rejected: {cls:'badge-rejected', label:'Rejected'},
+        waitlisted: {cls:'badge-waitlisted', label:'Waitlisted'}
+      };
+      const m = map[s] || map.pending;
+      return `<span class="badge ${m.cls} rounded-pill">${m.label}</span>`;
+    }
+
+    async function load(){
+      const url = new URL(window.location.href);
+      const id = url.searchParams.get('id');
+      if(!id){ alert('Missing id'); return; }
+
+      const token = localStorage.getItem('token');
+      const apiBase = 'http://localhost:5000/api';
+
+      const res = await fetch(`${apiBase}/admissions/${id}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const txt = await res.text();
+      let data;
+      try{ data = JSON.parse(txt); }catch{ data = { message: txt }; }
+      if(!res.ok){ throw new Error(data.message || 'Failed to load'); }
+
+      $('statusBadge').innerHTML = `<div class="mb-2">Application No: <b>${data.application_no || '—'}</b> &nbsp; ${statusToBadge(data.status)}</div>`;
+
+      $('studentInfo').innerHTML = [
+        kvHtml('Full Name', `${data.student_first_name || ''} ${data.student_middle_name || ''} ${data.student_last_name || ''}`.trim()),
+        kvHtml('DOB', data.dob),
+        kvHtml('Age', data.age),
+        kvHtml('Gender', data.gender),
+        kvHtml('Blood Group', data.blood_group),
+        kvHtml('Nationality', data.nationality),
+        kvHtml('Religion', data.religion),
+        kvHtml('Caste', data.caste),
+        kvHtml('Caste Category', data.caste_category),
+        kvHtml('Mother Tongue', data.mother_tongue),
+        kvHtml('Place of Birth', data.place_of_birth),
+      ].join('');
+
+      $('academicInfo').innerHTML = [
+        kvHtml('Academic Year', data.academic_year),
+        kvHtml('Class Applying For', data.class_applying_for),
+        kvHtml('Section Preference', data.section_preference),
+        kvHtml('Medium of Instruction', data.medium_of_instruction),
+        kvHtml('Second Language', data.second_language),
+        kvHtml('Third Language', data.third_language),
+        kvHtml('Previous School Name', data.previous_school_name),
+        kvHtml('Previous School Board', data.previous_school_board),
+        kvHtml('Previous Class Passed', data.previous_class_passed),
+        kvHtml('Percentage/Marks', data.percentage_last_class),
+        kvHtml('TC Number', data.tc_number),
+        kvHtml('Extracurricular', data.extracurricular_activities),
+        kvHtml('Special Needs', data.special_needs),
+        kvHtml('Special Needs Details', data.special_needs_details)
+      ].join('');
+
+      $('addressInfo').innerHTML = [
+        kvHtml('Present Address Line 1', data.present_address_line1),
+        kvHtml('Present Address Line 2', data.present_address_line2),
+        kvHtml('Present City', data.present_city),
+        kvHtml('Present District', data.present_district),
+        kvHtml('Present State', data.present_state),
+        kvHtml('Present PIN', data.present_pincode),
+        kvHtml('Permanent Address Same', data.is_permanent_same),
+        kvHtml('Student Mobile', data.student_mobile),
+        kvHtml('Student Email', data.student_email)
+      ].join('');
+
+      $('parentInfo').innerHTML = [
+        kvHtml('Father Name', `${data.father_first_name || ''} ${data.father_last_name || ''}`.trim()),
+        kvHtml('Father Qualification', data.father_qualification),
+        kvHtml('Father Occupation', data.father_occupation),
+        kvHtml('Father Employer', data.father_employer_name),
+        kvHtml('Father Annual Income', data.father_annual_income),
+        kvHtml('Father Mobile', data.father_mobile),
+        kvHtml('Father Email', data.father_email),
+        kvHtml('Mother Name', `${data.mother_first_name || ''} ${data.mother_last_name || ''}`.trim()),
+        kvHtml('Mother Qualification', data.mother_qualification),
+        kvHtml('Mother Occupation', data.mother_occupation),
+        kvHtml('Mother Employer', data.mother_employer_name),
+        kvHtml('Mother Annual Income', data.mother_annual_income),
+        kvHtml('Mother Mobile', data.mother_mobile),
+        kvHtml('Mother Email', data.mother_email),
+        kvHtml('Emergency Contact', `${data.emergency_contact_name || ''}`.trim()),
+        kvHtml('Emergency Relation', data.emergency_contact_relation),
+        kvHtml('Emergency Mobile', data.emergency_contact_mobile),
+      ].join('');
+
+      const docs = [
+        ['Student Photo', data.student_photo_path, 'image'],
+        ['Birth Certificate', data.birth_certificate_path, 'file'],
+        ['TC Document', data.tc_document_path, 'file'],
+        ['Previous Year Marksheet', data.marksheet_path, 'file'],
+        ['Aadhaar Copy', data.aadhaar_copy_path, 'file'],
+        ['Caste Certificate', data.caste_certificate_path, 'file'],
+        ['Medical Certificate', data.medical_certificate_path, 'file'],
+        ['Migration Certificate', data.migration_certificate_path, 'file'],
+        ['Father Photo', data.father_photo_path, 'image'],
+        ['Mother Photo', data.mother_photo_path, 'image'],
+      ];
+
+      $('docsInfo').innerHTML = docs.map(([label, p]) => {
+        const has = !!p;
+        if(!has) return `<div class="mb-2">• ${label}: <span class="text-muted">Not uploaded</span></div>`;
+        const fileName = String(p).split(/[\\/]/).pop();
+        // since server serves only /frontend statics, these links will work only if uploads folder is exposed.
+        const href = p.startsWith('/') ? p : `../../${p}`;
+        return `<div class="mb-2">• ${label}: <a href="${href}" target="_blank">${fileName}</a></div>`;
+      }).join('');
+    }
+
+    load().catch(err => alert(err.message || 'Failed'));
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+

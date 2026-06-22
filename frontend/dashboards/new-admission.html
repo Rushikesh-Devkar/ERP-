@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>New Admission - School ERP</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="../style.css" />
+
+  <style>
+    body{background:rgba(27,42,74,.04)}
+    .wizard-panel{border:1px solid rgba(27,42,74,.12); border-radius:8px; background:rgba(255,255,255,.9); box-shadow:0 16px 34px rgba(27,42,74,.10)}
+    .progress-strip{display:grid; grid-template-columns:repeat(6, minmax(120px, 1fr)); gap:8px}
+    .step-pill{padding:10px 12px; border-radius:8px; text-align:left; font-weight:900; border:1px solid rgba(27,42,74,.14); background:rgba(255,255,255,.88); color:rgba(27,42,74,.78); min-height:56px}
+    .step-pill.active{background:rgba(109,94,252,.12); border-color:rgba(109,94,252,.45); color:rgba(27,42,74,.98)}
+    .step-pill.done{background:rgba(34,197,94,.10); border-color:rgba(34,197,94,.35); color:rgba(22,101,52,.98)}
+    .step-no{display:block; font-size:.75rem; color:rgba(27,42,74,.55)}
+    .step-title{display:block; line-height:1.15}
+    .step-heading{border-bottom:1px solid rgba(27,42,74,.10); padding-bottom:14px; margin-bottom:16px}
+    label.form-label{margin-bottom:.25rem; font-weight:800; color:rgba(27,42,74,.88)}
+    .form-control, .form-select{background:rgba(255,255,255,.96) !important}
+    .req{color:rgba(220,38,38,1); font-weight:900}
+    .error-text{min-height:18px; font-size:12px; color:rgba(220,38,38,1); font-weight:700}
+    .review-card{border:1px solid rgba(27,42,74,.10); border-radius:8px; background:rgba(255,255,255,.75)}
+    .review-kv{display:grid; grid-template-columns:170px 1fr; gap:10px; padding:6px 0; border-bottom:1px dashed rgba(27,42,74,.12)}
+    .review-kv:last-child{border-bottom:none}
+    .review-key{font-weight:900; color:rgba(27,42,74,.62)}
+    .review-val{color:rgba(27,42,74,.96); word-break:break-word}
+    .declaration-box{
+      display:flex;
+      gap:12px;
+      align-items:flex-start;
+      margin-top:18px;
+      padding:16px;
+      border:2px solid rgba(245,158,11,.55);
+      border-radius:8px;
+      background:#fff7ed;
+      color:#1f2937;
+      box-shadow:0 12px 28px rgba(245,158,11,.16);
+    }
+    .declaration-box .form-check-input{
+      width:1.35rem;
+      height:1.35rem;
+      margin-top:2px;
+      border:2px solid #92400e;
+      flex:0 0 auto;
+    }
+    .declaration-box .form-check-input:checked{
+      background-color:#16a34a;
+      border-color:#15803d;
+    }
+    .declaration-title{
+      display:block;
+      font-weight:900;
+      color:#7c2d12;
+      line-height:1.2;
+    }
+    .declaration-text{
+      display:block;
+      margin-top:4px;
+      font-weight:800;
+      color:#374151;
+      line-height:1.35;
+    }
+    .declaration-box.needs-confirm{
+      border-color:#dc2626;
+      background:#fef2f2;
+      box-shadow:0 12px 28px rgba(220,38,38,.18);
+    }
+    @media (max-width: 992px){.progress-strip{grid-template-columns:repeat(2, minmax(140px,1fr))}}
+    @media (max-width: 576px){.progress-strip{grid-template-columns:1fr}.review-kv{grid-template-columns:1fr; gap:2px}}
+  </style>
+</head>
+<body>
+  <div class="app-shell d-flex">
+    <nav id="sidebar" class="sidebar d-flex flex-column vh-100 position-sticky top-0">
+      <div class="sidebar-brand">
+        <div class="brand-mark">ERP</div>
+        <div class="brand-text"><strong>School ERP</strong><span>Admin Console</span></div>
+      </div>
+      <div class="px-2 pb-3">
+        <button class="btn btn-sm btn-soft rounded-pill" onclick="DashUI.sidebarToggle()" title="Collapse sidebar">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+      </div>
+      <div class="sidebar-nav nav flex-column gap-1 px-2 pb-3" style="overflow:auto;">
+        <a class="nav-link" href="./admin-dashboard.html"><i class="fa-solid fa-gauge-high"></i><span>Dashboard</span></a>
+        <a class="nav-link" href="./students.html" data-nav="students"><i class="fa-solid fa-user-graduate"></i><span>Students</span></a>
+        <a class="nav-link active" href="./admissions.html" data-nav="admissions"><i class="fa-solid fa-file-signature"></i><span>Admissions</span></a>
+        <a class="nav-link" href="./admin-dashboard.html"><i class="fa-solid fa-calendar-check"></i><span>Attendance</span></a>
+        <a class="nav-link" href="./admin-dashboard.html"><i class="fa-solid fa-layer-group"></i><span>Classes</span></a>
+        <a class="nav-link" href="./admin-dashboard.html"><i class="fa-solid fa-book"></i><span>Subjects</span></a>
+        <a class="nav-link" href="./admin-dashboard.html"><i class="fa-solid fa-chalkboard-user"></i><span>Teachers</span></a>
+        <a class="nav-link mt-2" href="#" onclick="DashUI.logout()"><i class="fa-solid fa-right-from-bracket"></i><span>Logout</span></a>
+      </div>
+    </nav>
+
+    <main class="main flex-fill">
+      <div class="topbar py-3">
+        <div class="container-fluid px-3 px-md-4">
+          <div class="d-flex align-items-center justify-content-between gap-3">
+            <div>
+              <h4 class="m-0 glass-title"><i class="fa-solid fa-file-signature me-2"></i>New Admission</h4>
+              <div class="text-muted" style="color:rgba(27,42,74,.65)!important; font-weight:800;">Multi-step student admission form</div>
+            </div>
+            <button class="btn btn-soft rounded-pill" onclick="location.href='admissions.html'">
+              <i class="fa-solid fa-arrow-left me-2"></i>Back to Admissions
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="container-fluid">
+        <div class="p-3 p-md-4">
+          <div class="wizard-panel p-3 p-md-4 mb-3">
+            <div class="progress-strip">
+              <div class="step-pill" id="step1"><span class="step-no">Step 1</span><span class="step-title">Basic Student Info</span></div>
+              <div class="step-pill" id="step2"><span class="step-no">Step 2</span><span class="step-title">Academic & School Details</span></div>
+              <div class="step-pill" id="step3"><span class="step-no">Step 3</span><span class="step-title">Address & Contact</span></div>
+              <div class="step-pill" id="step4"><span class="step-no">Step 4</span><span class="step-title">Parent / Guardian Details</span></div>
+              <div class="step-pill" id="step5"><span class="step-no">Step 5</span><span class="step-title">Documents Upload</span></div>
+              <div class="step-pill" id="step6"><span class="step-no">Step 6</span><span class="step-title">Review & Submit</span></div>
+            </div>
+          </div>
+
+          <form id="wizardForm" class="wizard-panel p-3 p-md-4" enctype="multipart/form-data" novalidate>
+            <section data-step="1">
+              <div class="step-heading">
+                <h5 class="glass-title mb-1"><i class="fa-solid fa-user-graduate me-2"></i>Step 1 - Basic Student Info</h5>
+                <div class="text-muted" style="color:rgba(27,42,74,.65)!important; font-weight:800;">Personal identity details for the student.</div>
+              </div>
+              <div class="row g-2">
+                <div class="col-12 col-md-4"><label class="form-label">First Name <span class="req">*</span></label><input class="form-control js-name" name="student_first_name" id="student_first_name" required /><div class="error-text" id="err_student_first_name"></div></div>
+                <div class="col-12 col-md-4"><label class="form-label">Middle Name</label><input class="form-control js-name" name="student_middle_name" id="student_middle_name" /><div class="error-text" id="err_student_middle_name"></div></div>
+                <div class="col-12 col-md-4"><label class="form-label">Last Name <span class="req">*</span></label><input class="form-control js-name" name="student_last_name" id="student_last_name" required /><div class="error-text" id="err_student_last_name"></div></div>
+                <div class="col-12 col-md-4"><label class="form-label">Date of Birth <span class="req">*</span></label><input class="form-control" type="date" name="dob" id="dob" required /><div class="error-text" id="err_dob"></div></div>
+                <div class="col-12 col-md-4"><label class="form-label">Age</label><input class="form-control" id="age" readonly value="-" /></div>
+                <div class="col-12 col-md-4"><label class="form-label">Gender <span class="req">*</span></label><select class="form-select" name="gender" id="gender" required><option value="">Select</option><option>Male</option><option>Female</option><option>Other</option></select><div class="error-text" id="err_gender"></div></div>
+                <div class="col-12 col-md-4"><label class="form-label">Blood Group</label><select class="form-select" name="blood_group" id="blood_group"><option value="">Select</option><option>A+</option><option>A-</option><option>B+</option><option>B-</option><option>AB+</option><option>AB-</option><option>O+</option><option>O-</option><option>Unknown</option></select></div>
+                <div class="col-12 col-md-4"><label class="form-label">Nationality</label><input class="form-control js-name" name="nationality" id="nationality" value="Indian" /><div class="error-text" id="err_nationality"></div></div>
+                <div class="col-12 col-md-4"><label class="form-label">Religion</label><input class="form-control js-name" name="religion" id="religion" /><div class="error-text" id="err_religion"></div></div>
+                <div class="col-12 col-md-4"><label class="form-label">Caste</label><input class="form-control js-name" name="caste" id="caste" /><div class="error-text" id="err_caste"></div></div>
+                <div class="col-12 col-md-4"><label class="form-label">Caste Category <span class="req">*</span></label><select class="form-select" name="caste_category" id="caste_category" required><option value="">Select</option><option>General</option><option>OBC</option><option>SC</option><option>ST</option><option>NT</option><option>Other</option></select><div class="error-text" id="err_caste_category"></div></div>
+                <div class="col-12 col-md-4"><label class="form-label">Mother Tongue</label><input class="form-control js-name" name="mother_tongue" id="mother_tongue" /><div class="error-text" id="err_mother_tongue"></div></div>
+                <div class="col-12 col-md-4"><label class="form-label">Place of Birth</label><input class="form-control js-text" name="place_of_birth" id="place_of_birth" /><div class="error-text" id="err_place_of_birth"></div></div>
+                <div class="col-12 col-md-4"><label class="form-label">Aadhaar Number</label><input class="form-control js-digits" name="aadhaar_no" id="aadhaar_no" inputmode="numeric" maxlength="12" data-exact="12" /><div class="error-text" id="err_aadhaar_no"></div></div>
+                <div class="col-12 col-md-4"><label class="form-label">Birth Certificate Number</label><input class="form-control js-code" name="birth_certificate_no" id="birth_certificate_no" /><div class="error-text" id="err_birth_certificate_no"></div></div>
+              </div>
+            </section>
+
+            <section data-step="2" hidden>
+              <div class="step-heading">
+                <h5 class="glass-title mb-1"><i class="fa-solid fa-school me-2"></i>Step 2 - Academic & School Details</h5>
+                <div class="text-muted" style="color:rgba(27,42,74,.65)!important; font-weight:800;">Class, language, and previous school information.</div>
+              </div>
+              <div class="row g-2">
+                <div class="col-12 col-md-4"><label class="form-label">Class Applying For <span class="req">*</span></label><input class="form-control js-class" name="class_applying_for" id="class_applying_for" placeholder="e.g. Class 1" required /><div class="error-text" id="err_class_applying_for"></div></div>
+                <div class="col-12 col-md-4"><label class="form-label">Section Preference</label><input class="form-control js-section" name="section_preference" id="section_preference" maxlength="1" placeholder="A/B/C/D" /><div class="error-text" id="err_section_preference"></div></div>
+                <div class="col-12 col-md-4"><label class="form-label">Academic Year <span class="req">*</span></label><input class="form-control" name="academic_year" id="academic_year" placeholder="e.g. 2026-27" maxlength="7" required /><div class="error-text" id="err_academic_year"></div></div>
+                <div class="col-12 col-md-4"><label class="form-label">Previous School Name</label><input class="form-control js-text" name="previous_school_name" id="previous_school_name" /><div class="error-text" id="err_previous_school_name"></div></div>
+                <div class="col-12 col-md-4"><label class="form-label">Previous School Board</label><input class="form-control js-text" name="previous_school_board" id="previous_school_board" /><div class="error-text" id="err_previous_school_board"></div></div>
+                <div class="col-12 col-md-4"><label class="form-label">Previous Class Passed</label><input class="form-control js-class" name="previous_class_passed" id="previous_class_passed" /><div class="error-text" id="err_previous_class_passed"></div></div>
+                <div class="col-12 col-md-4"><label class="form-label">Percentage/Marks in Last Class</label><input class="form-control js-decimal" name="percentage_last_class" id="percentage_last_class" inputmode="decimal" /><div class="error-text" id="err_percentage_last_class"></div></div>
+                <div class="col-12 col-md-4"><label class="form-label">TC Number</label><input class="form-control js-code" name="tc_number" id="tc_number" /><div class="error-text" id="err_tc_number"></div></div>
+                <div class="col-12 col-md-4"><label class="form-label">Medium of Instruction <span class="req">*</span></label><input class="form-control js-name" name="medium_of_instruction" id="medium_of_instruction" required /><div class="error-text" id="err_medium_of_instruction"></div></div>
+                <div class="col-12 col-md-4"><label class="form-label">Second Language</label><input class="form-control js-name" name="second_language" id="second_language" /><div class="error-text" id="err_second_language"></div></div>
+                <div class="col-12 col-md-4"><label class="form-label">Third Language</label><input class="form-control js-name" name="third_language" id="third_language" /><div class="error-text" id="err_third_language"></div></div>
+                <div class="col-12"><label class="form-label">Extracurricular Activities</label><textarea class="form-control" name="extracurricular_activities" id="extracurricular_activities" rows="2"></textarea></div>
+                <div class="col-12 col-md-4"><label class="form-label">Any Special Needs?</label><select class="form-select" name="special_needs" id="special_needs"><option value="No" selected>No</option><option value="Yes">Yes</option></select></div>
+                <div class="col-12 col-md-8"><label class="form-label">Special Needs Details</label><input class="form-control js-text" name="special_needs_details" id="special_needs_details" /><div class="error-text" id="err_special_needs_details"></div></div>
+              </div>
+            </section>
+
+            <section data-step="3" hidden>
+              <div class="step-heading">
+                <h5 class="glass-title mb-1"><i class="fa-solid fa-location-dot me-2"></i>Step 3 - Address & Contact</h5>
+                <div class="text-muted" style="color:rgba(27,42,74,.65)!important; font-weight:800;">Address, PIN code, mobile number, and email.</div>
+              </div>
+              <div class="row g-2">
+                <div class="col-12"><h6 class="mb-2">Present Address</h6></div>
+                <div class="col-12 col-md-6"><label class="form-label">Address Line 1 <span class="req">*</span></label><input class="form-control js-address" id="present_address_line1" name="present_address_line1" required /><div class="error-text" id="err_present_address_line1"></div></div>
+                <div class="col-12 col-md-6"><label class="form-label">Address Line 2</label><input class="form-control js-address" id="present_address_line2" name="present_address_line2" /><div class="error-text" id="err_present_address_line2"></div></div>
+                <div class="col-12 col-md-4"><label class="form-label">City/Village <span class="req">*</span></label><input class="form-control js-name" id="present_city" name="present_city" required /><div class="error-text" id="err_present_city"></div></div>
+                <div class="col-12 col-md-4"><label class="form-label">District <span class="req">*</span></label><input class="form-control js-name" id="present_district" name="present_district" required /><div class="error-text" id="err_present_district"></div></div>
+                <div class="col-12 col-md-4"><label class="form-label">State <span class="req">*</span></label><input class="form-control js-name" id="present_state" name="present_state" required /><div class="error-text" id="err_present_state"></div></div>
+                <div class="col-12 col-md-4"><label class="form-label">PIN Code <span class="req">*</span></label><input class="form-control js-digits" id="present_pincode" name="present_pincode" required inputmode="numeric" maxlength="6" data-exact="6" /><div class="error-text" id="err_present_pincode"></div></div>
+                <div class="col-12">
+                  <div class="form-check mt-2">
+                    <input class="form-check-input" type="checkbox" id="is_permanent_same" name="is_permanent_same" value="Yes" checked>
+                    <label class="form-check-label" for="is_permanent_same">Permanent address is same as present address</label>
+                  </div>
+                </div>
+                <div class="col-12" id="permanentSection" hidden>
+                  <div class="row g-2 mt-2">
+                    <div class="col-12"><h6 class="mb-2">Permanent Address</h6></div>
+                    <div class="col-12 col-md-6"><label class="form-label">Address Line 1</label><input class="form-control js-address" id="permanent_address_line1" name="permanent_address_line1" /><div class="error-text" id="err_permanent_address_line1"></div></div>
+                    <div class="col-12 col-md-6"><label class="form-label">Address Line 2</label><input class="form-control js-address" id="permanent_address_line2" name="permanent_address_line2" /><div class="error-text" id="err_permanent_address_line2"></div></div>
+                    <div class="col-12 col-md-4"><label class="form-label">City</label><input class="form-control js-name" id="permanent_city" name="permanent_city" /><div class="error-text" id="err_permanent_city"></div></div>
+                    <div class="col-12 col-md-4"><label class="form-label">District</label><input class="form-control js-name" id="permanent_district" name="permanent_district" /><div class="error-text" id="err_permanent_district"></div></div>
+                    <div class="col-12 col-md-4"><label class="form-label">State</label><input class="form-control js-name" id="permanent_state" name="permanent_state" /><div class="error-text" id="err_permanent_state"></div></div>
+                    <div class="col-12 col-md-4"><label class="form-label">PIN Code</label><input class="form-control js-digits" id="permanent_pincode" name="permanent_pincode" inputmode="numeric" maxlength="6" data-exact="6" /><div class="error-text" id="err_permanent_pincode"></div></div>
+                  </div>
+                </div>
+                <div class="col-12"><h6 class="mt-3">Contact</h6></div>
+                <div class="col-12 col-md-6"><label class="form-label">Student Mobile Number <span class="req">*</span></label><input class="form-control js-digits" id="student_mobile" name="student_mobile" required inputmode="numeric" maxlength="10" data-exact="10" /><div class="error-text" id="err_student_mobile"></div></div>
+                <div class="col-12 col-md-6"><label class="form-label">Student Gmail / Email Address</label><input class="form-control js-email" id="student_email" name="student_email" type="email" /><div class="error-text" id="err_student_email"></div></div>
+              </div>
+            </section>
+
+            <section data-step="4" hidden>
+              <div class="step-heading">
+                <h5 class="glass-title mb-1"><i class="fa-solid fa-user-group me-2"></i>Step 4 - Parent / Guardian Details</h5>
+                <div class="text-muted" style="color:rgba(27,42,74,.65)!important; font-weight:800;">Parent contacts, identity numbers, and emergency contact.</div>
+              </div>
+              <div class="row g-2">
+                <div class="col-12"><h6 class="mb-2">Father Details</h6></div>
+                <div class="col-12 col-md-4"><label class="form-label">Father First Name <span class="req">*</span></label><input class="form-control js-name" id="father_first_name" name="father_first_name" required /><div class="error-text" id="err_father_first_name"></div></div>
+                <div class="col-12 col-md-4"><label class="form-label">Father Last Name</label><input class="form-control js-name" id="father_last_name" name="father_last_name" /><div class="error-text" id="err_father_last_name"></div></div>
+                <div class="col-12 col-md-4"><label class="form-label">Father Qualification</label><input class="form-control js-text" id="father_qualification" name="father_qualification" /><div class="error-text" id="err_father_qualification"></div></div>
+                <div class="col-12 col-md-4"><label class="form-label">Occupation <span class="req">*</span></label><input class="form-control js-text" id="father_occupation" name="father_occupation" required /><div class="error-text" id="err_father_occupation"></div></div>
+                <div class="col-12 col-md-4"><label class="form-label">Employer/Company Name</label><input class="form-control js-text" id="father_employer_name" name="father_employer_name" /><div class="error-text" id="err_father_employer_name"></div></div>
+                <div class="col-12 col-md-4"><label class="form-label">Annual Income</label><input class="form-control js-digits" id="father_annual_income" name="father_annual_income" inputmode="numeric" /><div class="error-text" id="err_father_annual_income"></div></div>
+                <div class="col-12 col-md-4"><label class="form-label">Mobile Number <span class="req">*</span></label><input class="form-control js-digits" id="father_mobile" name="father_mobile" required inputmode="numeric" maxlength="10" data-exact="10" /><div class="error-text" id="err_father_mobile"></div></div>
+                <div class="col-12 col-md-4"><label class="form-label">Gmail / Email Address</label><input class="form-control js-email" id="father_email" name="father_email" type="email" /><div class="error-text" id="err_father_email"></div></div>
+                <div class="col-12 col-md-4"><label class="form-label">Aadhaar Number</label><input class="form-control js-digits" id="father_aadhaar" name="father_aadhaar" inputmode="numeric" maxlength="12" data-exact="12" /><div class="error-text" id="err_father_aadhaar"></div></div>
+                <div class="col-12 col-md-4"><label class="form-label">PAN Number</label><input class="form-control js-pan" id="father_pan" name="father_pan" maxlength="10" /><div class="error-text" id="err_father_pan"></div></div>
+                <div class="col-12 col-md-8"><label class="form-label">Father Photo Upload</label><input type="file" class="form-control js-file" id="fatherPhoto" name="fatherPhoto" accept="image/jpeg,image/png" data-max-mb="1" /><div class="error-text" id="err_fatherPhoto"></div></div>
+
+                <div class="col-12"><h6 class="mt-3 mb-2">Mother Details</h6></div>
+                <div class="col-12 col-md-4"><label class="form-label">Mother First Name <span class="req">*</span></label><input class="form-control js-name" id="mother_first_name" name="mother_first_name" required /><div class="error-text" id="err_mother_first_name"></div></div>
+                <div class="col-12 col-md-4"><label class="form-label">Mother Last Name</label><input class="form-control js-name" id="mother_last_name" name="mother_last_name" /><div class="error-text" id="err_mother_last_name"></div></div>
+                <div class="col-12 col-md-4"><label class="form-label">Mother Qualification</label><input class="form-control js-text" id="mother_qualification" name="mother_qualification" /><div class="error-text" id="err_mother_qualification"></div></div>
+                <div class="col-12 col-md-4"><label class="form-label">Occupation</label><input class="form-control js-text" id="mother_occupation" name="mother_occupation" /><div class="error-text" id="err_mother_occupation"></div></div>
+                <div class="col-12 col-md-4"><label class="form-label">Employer/Company Name</label><input class="form-control js-text" id="mother_employer_name" name="mother_employer_name" /><div class="error-text" id="err_mother_employer_name"></div></div>
+                <div class="col-12 col-md-4"><label class="form-label">Annual Income</label><input class="form-control js-digits" id="mother_annual_income" name="mother_annual_income" inputmode="numeric" /><div class="error-text" id="err_mother_annual_income"></div></div>
+                <div class="col-12 col-md-4"><label class="form-label">Mobile Number <span class="req">*</span></label><input class="form-control js-digits" id="mother_mobile" name="mother_mobile" required inputmode="numeric" maxlength="10" data-exact="10" /><div class="error-text" id="err_mother_mobile"></div></div>
+                <div class="col-12 col-md-4"><label class="form-label">Gmail / Email Address</label><input class="form-control js-email" id="mother_email" name="mother_email" type="email" /><div class="error-text" id="err_mother_email"></div></div>
+                <div class="col-12 col-md-4"><label class="form-label">Aadhaar Number</label><input class="form-control js-digits" id="mother_aadhaar" name="mother_aadhaar" inputmode="numeric" maxlength="12" data-exact="12" /><div class="error-text" id="err_mother_aadhaar"></div></div>
+                <div class="col-12 col-md-8"><label class="form-label">Mother Photo Upload</label><input type="file" class="form-control js-file" id="motherPhoto" name="motherPhoto" accept="image/jpeg,image/png" data-max-mb="1" /><div class="error-text" id="err_motherPhoto"></div></div>
+
+                <div class="col-12"><h6 class="mt-3 mb-2">Emergency Contact</h6></div>
+                <div class="col-12 col-md-4"><label class="form-label">Emergency Contact Name <span class="req">*</span></label><input class="form-control js-name" id="emergency_contact_name" name="emergency_contact_name" required /><div class="error-text" id="err_emergency_contact_name"></div></div>
+                <div class="col-12 col-md-4"><label class="form-label">Relation <span class="req">*</span></label><input class="form-control js-name" id="emergency_contact_relation" name="emergency_contact_relation" required /><div class="error-text" id="err_emergency_contact_relation"></div></div>
+                <div class="col-12 col-md-4"><label class="form-label">Mobile Number <span class="req">*</span></label><input class="form-control js-digits" id="emergency_contact_mobile" name="emergency_contact_mobile" required inputmode="numeric" maxlength="10" data-exact="10" /><div class="error-text" id="err_emergency_contact_mobile"></div></div>
+
+                <div class="col-12"><h6 class="mt-3 mb-2">Guardian Details</h6></div>
+                <div class="col-12 col-md-4"><label class="form-label">Guardian Name</label><input class="form-control js-name" id="guardian_name" name="guardian_name" /><div class="error-text" id="err_guardian_name"></div></div>
+                <div class="col-12 col-md-4"><label class="form-label">Relation to Student</label><input class="form-control js-name" id="guardian_relation" name="guardian_relation" /><div class="error-text" id="err_guardian_relation"></div></div>
+                <div class="col-12 col-md-4"><label class="form-label">Guardian Mobile</label><input class="form-control js-digits" id="guardian_mobile" name="guardian_mobile" inputmode="numeric" maxlength="10" data-exact="10" /><div class="error-text" id="err_guardian_mobile"></div></div>
+                <div class="col-12"><label class="form-label">Guardian Address</label><textarea class="form-control js-address" id="guardian_address" name="guardian_address" rows="2"></textarea><div class="error-text" id="err_guardian_address"></div></div>
+              </div>
+            </section>
+
+            <section data-step="5" hidden>
+              <div class="step-heading">
+                <h5 class="glass-title mb-1"><i class="fa-solid fa-file-upload me-2"></i>Step 5 - Documents Upload</h5>
+                <div class="text-muted" style="color:rgba(27,42,74,.65)!important; font-weight:800;">Upload required admission documents.</div>
+              </div>
+              <div class="row g-2">
+                <div class="col-12 col-md-6"><label class="form-label">Student Passport Photo <span class="req">*</span></label><input type="file" class="form-control js-file" id="studentPhoto" name="studentPhoto" accept="image/jpeg,image/png" data-max-mb="2" required /><div class="error-text" id="err_studentPhoto"></div></div>
+                <div class="col-12 col-md-6"><label class="form-label">Birth Certificate <span class="req">*</span></label><input type="file" class="form-control js-file" id="birthCertificate" name="birthCertificate" accept="application/pdf,image/jpeg,image/png" data-max-mb="5" required /><div class="error-text" id="err_birthCertificate"></div></div>
+                <div class="col-12 col-md-6"><label class="form-label">Transfer Certificate / TC</label><input type="file" class="form-control js-file" id="tcDocument" name="tcDocument" accept="application/pdf,image/jpeg,image/png" data-max-mb="5" /><div class="error-text" id="err_tcDocument"></div></div>
+                <div class="col-12 col-md-6"><label class="form-label">Previous Year Marksheet</label><input type="file" class="form-control js-file" id="marksheet" name="marksheet" accept="application/pdf,image/jpeg,image/png" data-max-mb="5" /><div class="error-text" id="err_marksheet"></div></div>
+                <div class="col-12 col-md-6"><label class="form-label">Aadhaar Card Copy</label><input type="file" class="form-control js-file" id="aadhaarCopy" name="aadhaarCopy" accept="application/pdf,image/jpeg,image/png" data-max-mb="5" /><div class="error-text" id="err_aadhaarCopy"></div></div>
+                <div class="col-12 col-md-6"><label class="form-label">Caste Certificate</label><input type="file" class="form-control js-file" id="casteCertificate" name="casteCertificate" accept="application/pdf,image/jpeg,image/png" data-max-mb="5" /><div class="error-text" id="err_casteCertificate"></div></div>
+                <div class="col-12 col-md-6"><label class="form-label">Medical/Fitness Certificate</label><input type="file" class="form-control js-file" id="medicalCertificate" name="medicalCertificate" accept="application/pdf,image/jpeg,image/png" data-max-mb="5" /><div class="error-text" id="err_medicalCertificate"></div></div>
+                <div class="col-12 col-md-6"><label class="form-label">Migration Certificate</label><input type="file" class="form-control js-file" id="migrationCertificate" name="migrationCertificate" accept="application/pdf,image/jpeg,image/png" data-max-mb="5" /><div class="error-text" id="err_migrationCertificate"></div></div>
+              </div>
+            </section>
+
+            <section data-step="6" hidden>
+              <div class="step-heading">
+                <h5 class="glass-title mb-1"><i class="fa-solid fa-clipboard-check me-2"></i>Step 6 - Review & Submit</h5>
+                <div class="text-muted" style="color:rgba(27,42,74,.65)!important; font-weight:800;">Check all details before adding the student admission.</div>
+              </div>
+              <div id="reviewCards" class="row g-3"></div>
+              <div class="declaration-box" id="declarationBox">
+                <input class="form-check-input" type="checkbox" id="confirmAll" />
+                <label class="form-check-label m-0" for="confirmAll">
+                  <span class="declaration-title">Final confirmation required</span>
+                  <span class="declaration-text">I have checked every detail above and confirm this admission application is correct and ready to submit.</span>
+                </label>
+              </div>
+              <div id="submitStatus" class="mt-3"></div>
+            </section>
+
+            <div class="mt-3 d-flex align-items-center justify-content-between gap-2">
+              <button class="btn btn-soft rounded-pill" type="button" id="backBtn" onclick="backStep()">
+                <i class="fa-solid fa-arrow-left me-2"></i>Back
+              </button>
+              <button class="btn btn-accent rounded-pill" type="button" id="nextBtn" onclick="nextStep()">
+                Next<i class="fa-solid fa-arrow-right ms-2"></i>
+              </button>
+              <button class="btn btn-success rounded-pill" type="submit" id="submitBtn" hidden>
+                <i class="fa-solid fa-check-double me-2"></i>Submit Application
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="../script.js"></script>
+  <script>
+    DashUI.ensureRole('admin');
+    DashUI.hydrateSidebarCollapse();
+
+    const state = { step: 1, submitting: false };
+    const stepsTotal = 6;
+    const requiredByStep = {
+      1: ['student_first_name','student_last_name','dob','gender','caste_category'],
+      2: ['class_applying_for','academic_year','medium_of_instruction'],
+      3: ['present_address_line1','present_city','present_district','present_state','present_pincode','student_mobile'],
+      4: ['father_first_name','father_occupation','father_mobile','mother_first_name','mother_mobile','emergency_contact_name','emergency_contact_relation','emergency_contact_mobile'],
+      5: ['studentPhoto','birthCertificate']
+    };
+    const patterns = {
+      email: /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/,
+      gmail: /^[^\s@]+@(gmail\.com|[^\s@]+\.[^\s@]{2,})$/,
+      pan: /^[A-Z]{5}[0-9]{4}[A-Z]$/,
+      academicYear: /^20\d{2}-\d{2}$/,
+      name: /^[A-Za-z .'-]+$/,
+      text: /^[A-Za-z0-9 .,'()&/-]+$/,
+      address: /^[A-Za-z0-9 .,#'()&/-]+$/,
+      code: /^[A-Za-z0-9/-]+$/,
+      className: /^[A-Za-z0-9 .-]+$/,
+      section: /^[A-Za-z]$/
+    };
+
+    function $(id){ return document.getElementById(id); }
+    function val(id){ return String($(id)?.value || '').trim(); }
+
+    function showErr(id, message){
+      const el = $(id);
+      const err = $(`err_${id}`);
+      if(el) el.classList.toggle('is-invalid', !!message);
+      if(err) err.textContent = message || '';
+    }
+
+    function clearErr(id){ showErr(id, ''); }
+
+    function formatNameInput(el){
+      el.value = el.value.replace(/[^A-Za-z .'-]/g, '');
+    }
+
+    function formatTextInput(el){
+      el.value = el.value.replace(/[^A-Za-z0-9 .,'()&/-]/g, '');
+    }
+
+    function formatAddressInput(el){
+      el.value = el.value.replace(/[^A-Za-z0-9 .,#'()&/-]/g, '');
+    }
+
+    function formatCodeInput(el){
+      el.value = el.value.replace(/[^A-Za-z0-9/-]/g, '').toUpperCase();
+    }
+
+    function calcAge(){
+      const dobStr = val('dob');
+      const dob = new Date(dobStr);
+      if(Number.isNaN(dob.getTime())){ $('age').value = '-'; return null; }
+      const now = new Date();
+      let age = now.getFullYear() - dob.getFullYear();
+      const monthDiff = now.getMonth() - dob.getMonth();
+      if(monthDiff < 0 || (monthDiff === 0 && now.getDate() < dob.getDate())) age--;
+      $('age').value = String(age);
+      return age;
+    }
+
+    function syncPermanentAddress(){
+      const same = $('is_permanent_same').checked;
+      $('permanentSection').hidden = same;
+      if(!same) return;
+      $('permanent_address_line1').value = val('present_address_line1');
+      $('permanent_address_line2').value = val('present_address_line2');
+      $('permanent_city').value = val('present_city');
+      $('permanent_district').value = val('present_district');
+      $('permanent_state').value = val('present_state');
+      $('permanent_pincode').value = val('present_pincode');
+    }
+
+    function validateField(id){
+      const el = $(id);
+      if(!el) return true;
+      clearErr(id);
+
+      if(el.required && el.type === 'file' && (!el.files || !el.files[0])){
+        showErr(id, 'Required');
+        return false;
+      }
+      if(el.required && el.type !== 'file' && !val(id)){
+        showErr(id, 'Required');
+        return false;
+      }
+      if(!val(id) && el.type !== 'file') return true;
+
+      if(el.classList.contains('js-digits')){
+        const exact = Number(el.dataset.exact || 0);
+        if(!/^\d+$/.test(val(id))){
+          showErr(id, 'Only digits are allowed');
+          return false;
+        }
+        if(exact && val(id).length !== exact){
+          showErr(id, `Must be exactly ${exact} digits`);
+          return false;
+        }
+      }
+      if(el.classList.contains('js-email') && val(id) && !patterns.email.test(val(id))){
+        showErr(id, 'Enter a valid email address');
+        return false;
+      }
+      if(el.classList.contains('js-pan') && val(id) && !patterns.pan.test(val(id).toUpperCase())){
+        showErr(id, 'PAN format must be ABCDE1234F');
+        return false;
+      }
+      if(el.classList.contains('js-name') && val(id) && !patterns.name.test(val(id))){
+        showErr(id, 'Only letters and spaces are allowed');
+        return false;
+      }
+      if(el.classList.contains('js-text') && val(id) && !patterns.text.test(val(id))){
+        showErr(id, 'Only letters, numbers, and common punctuation are allowed');
+        return false;
+      }
+      if(el.classList.contains('js-address') && val(id) && !patterns.address.test(val(id))){
+        showErr(id, 'Address contains invalid characters');
+        return false;
+      }
+      if(el.classList.contains('js-code') && val(id) && !patterns.code.test(val(id))){
+        showErr(id, 'Only letters, numbers, slash, and hyphen are allowed');
+        return false;
+      }
+      if(el.classList.contains('js-class') && val(id) && !patterns.className.test(val(id))){
+        showErr(id, 'Only letters, numbers, spaces, dot, and hyphen are allowed');
+        return false;
+      }
+      if(el.classList.contains('js-section') && val(id) && !patterns.section.test(val(id))){
+        showErr(id, 'Use one section letter only');
+        return false;
+      }
+      if(id === 'academic_year' && val(id) && !patterns.academicYear.test(val(id))){
+        showErr(id, 'Use format like 2026-27');
+        return false;
+      }
+      if(id === 'percentage_last_class' && val(id)){
+        const n = Number(val(id));
+        if(Number.isNaN(n) || n < 0 || n > 100){
+          showErr(id, 'Enter a number from 0 to 100');
+          return false;
+        }
+      }
+      if(id === 'dob'){
+        const age = calcAge();
+        if(age === null || age < 2 || age > 30){
+          showErr(id, 'Enter a valid student DOB');
+          return false;
+        }
+      }
+      if(el.type === 'file' && el.files && el.files[0]){
+        const maxMb = Number(el.dataset.maxMb || 5);
+        const file = el.files[0];
+        const allowed = (el.accept || '').split(',').map(s => s.trim()).filter(Boolean);
+        if(allowed.length && !allowed.includes(file.type)){
+          showErr(id, 'File type is not allowed');
+          return false;
+        }
+        if(file.size > maxMb * 1024 * 1024){
+          showErr(id, `File must be under ${maxMb}MB`);
+          return false;
+        }
+      }
+      return true;
+    }
+
+    function fieldsInStep(step){
+      return Array.from(document.querySelectorAll(`section[data-step="${step}"] input, section[data-step="${step}"] select, section[data-step="${step}"] textarea`));
+    }
+
+    function validateStep(step){
+      if(step === 3) syncPermanentAddress();
+      let ok = true;
+      fieldsInStep(step).forEach(el => {
+        if(!validateField(el.id)) ok = false;
+      });
+      (requiredByStep[step] || []).forEach(id => {
+        if(!validateField(id)) ok = false;
+      });
+      return ok;
+    }
+
+    function setStep(step){
+      state.step = step;
+      document.querySelectorAll('section[data-step]').forEach(section => {
+        section.hidden = Number(section.dataset.step) !== step;
+      });
+      for(let i = 1; i <= stepsTotal; i++){
+        const pill = $(`step${i}`);
+        pill.classList.toggle('active', i === step);
+        pill.classList.toggle('done', i < step);
+      }
+      $('backBtn').style.visibility = step === 1 ? 'hidden' : 'visible';
+      $('nextBtn').hidden = step === 6;
+      $('submitBtn').hidden = step !== 6;
+      if(step === 6) buildReview();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function nextStep(){
+      if(!validateStep(state.step)) return;
+      if(state.step < stepsTotal) setStep(state.step + 1);
+    }
+
+    function backStep(){
+      if(state.step > 1) setStep(state.step - 1);
+    }
+
+    function esc(value){
+      return String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'}[ch]));
+    }
+
+    function reviewKv(key, value){
+      const text = String(value || '').trim() || '-';
+      return `<div class="review-kv"><div class="review-key">${esc(key)}</div><div class="review-val">${esc(text)}</div></div>`;
+    }
+
+    function reviewSection(title, rows){
+      return `<div class="col-12 col-lg-6"><div class="review-card p-3 h-100"><div class="fw-bold mb-2">${esc(title)}</div>${rows.join('')}</div></div>`;
+    }
+
+    function fileName(id){
+      const file = $(id)?.files?.[0];
+      return file ? file.name : '-';
+    }
+
+    function buildReview(){
+      $('reviewCards').innerHTML = [
+        reviewSection('Student Information', [
+          reviewKv('Name', `${val('student_first_name')} ${val('student_middle_name')} ${val('student_last_name')}`.replace(/\s+/g,' ').trim()),
+          reviewKv('DOB', val('dob')),
+          reviewKv('Age', $('age').value),
+          reviewKv('Gender', val('gender')),
+          reviewKv('Aadhaar', val('aadhaar_no')),
+        ]),
+        reviewSection('Academic Details', [
+          reviewKv('Class', val('class_applying_for')),
+          reviewKv('Section', val('section_preference')),
+          reviewKv('Academic Year', val('academic_year')),
+          reviewKv('Medium', val('medium_of_instruction')),
+          reviewKv('Previous School', val('previous_school_name')),
+        ]),
+        reviewSection('Address & Contact', [
+          reviewKv('Address', `${val('present_address_line1')} ${val('present_city')} ${val('present_state')} ${val('present_pincode')}`.replace(/\s+/g,' ').trim()),
+          reviewKv('Student Mobile', val('student_mobile')),
+          reviewKv('Student Email', val('student_email')),
+        ]),
+        reviewSection('Parent / Guardian', [
+          reviewKv('Father', `${val('father_first_name')} ${val('father_last_name')}`.replace(/\s+/g,' ').trim()),
+          reviewKv('Father Mobile', val('father_mobile')),
+          reviewKv('Father PAN', val('father_pan')),
+          reviewKv('Mother', `${val('mother_first_name')} ${val('mother_last_name')}`.replace(/\s+/g,' ').trim()),
+          reviewKv('Mother Mobile', val('mother_mobile')),
+          reviewKv('Emergency Contact', `${val('emergency_contact_name')} - ${val('emergency_contact_mobile')}`),
+        ]),
+        reviewSection('Documents', [
+          reviewKv('Student Photo', fileName('studentPhoto')),
+          reviewKv('Birth Certificate', fileName('birthCertificate')),
+          reviewKv('TC Document', fileName('tcDocument')),
+          reviewKv('Marksheet', fileName('marksheet')),
+          reviewKv('Aadhaar Copy', fileName('aadhaarCopy')),
+        ])
+      ].join('');
+    }
+
+    function wireInputRestrictions(){
+      document.querySelectorAll('.js-digits').forEach(el => {
+        el.addEventListener('input', () => {
+          el.value = el.value.replace(/\D/g, '').slice(0, Number(el.maxLength > 0 ? el.maxLength : 99));
+          validateField(el.id);
+        });
+      });
+      document.querySelectorAll('.js-pan').forEach(el => {
+        el.addEventListener('input', () => {
+          el.value = el.value.replace(/[^A-Za-z0-9]/g, '').toUpperCase().slice(0, 10);
+          validateField(el.id);
+        });
+      });
+      document.querySelectorAll('.js-name').forEach(el => el.addEventListener('input', () => { formatNameInput(el); validateField(el.id); }));
+      document.querySelectorAll('.js-text').forEach(el => el.addEventListener('input', () => { formatTextInput(el); validateField(el.id); }));
+      document.querySelectorAll('.js-address').forEach(el => el.addEventListener('input', () => { formatAddressInput(el); validateField(el.id); }));
+      document.querySelectorAll('.js-code').forEach(el => el.addEventListener('input', () => { formatCodeInput(el); validateField(el.id); }));
+      document.querySelectorAll('.js-class').forEach(el => el.addEventListener('input', () => { el.value = el.value.replace(/[^A-Za-z0-9 .-]/g, ''); validateField(el.id); }));
+      document.querySelectorAll('.js-section').forEach(el => el.addEventListener('input', () => { el.value = el.value.replace(/[^A-Za-z]/g, '').toUpperCase().slice(0,1); validateField(el.id); }));
+      document.querySelectorAll('.js-decimal').forEach(el => el.addEventListener('input', () => { el.value = el.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1'); validateField(el.id); }));
+      document.querySelectorAll('.js-email').forEach(el => el.addEventListener('input', () => validateField(el.id)));
+      document.querySelectorAll('.js-file').forEach(el => el.addEventListener('change', () => validateField(el.id)));
+      $('academic_year').addEventListener('input', () => {
+        $('academic_year').value = $('academic_year').value.replace(/[^0-9-]/g, '').slice(0, 7);
+        validateField('academic_year');
+      });
+      $('dob').addEventListener('change', () => validateField('dob'));
+      $('is_permanent_same').addEventListener('change', syncPermanentAddress);
+      ['present_address_line1','present_address_line2','present_city','present_district','present_state','present_pincode'].forEach(id => {
+        $(id).addEventListener('input', syncPermanentAddress);
+      });
+    }
+
+    $('wizardForm').addEventListener('submit', async (event) => {
+      event.preventDefault();
+      if(state.submitting) return;
+
+      let ok = true;
+      for(let step = 1; step <= 5; step++){
+        if(!validateStep(step)) ok = false;
+      }
+      if(!ok){
+        const bad = document.querySelector('.is-invalid');
+        const badStep = bad?.closest('section[data-step]')?.dataset.step;
+        if(badStep) setStep(Number(badStep));
+        return;
+      }
+      if(!$('confirmAll').checked){
+        $('declarationBox').classList.add('needs-confirm');
+        $('submitStatus').innerHTML = '<div class="alert alert-warning fw-bold">Please tick the final confirmation box before submitting the application.</div>';
+        return;
+      }
+
+      state.submitting = true;
+      $('submitBtn').disabled = true;
+      $('submitStatus').innerHTML = '<div class="alert alert-info">Submitting admission...</div>';
+
+      try{
+        const res = await fetch('http://localhost:5000/api/admissions/new', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+          body: new FormData($('wizardForm'))
+        });
+        const text = await res.text();
+        let data;
+        try{ data = JSON.parse(text); }catch{ data = { message: text }; }
+        if(!res.ok){
+          const details = Array.isArray(data.errors) ? `: ${data.errors.join(', ')}` : '';
+          const serverDetail = data.error && data.error !== data.message ? ` (${data.error})` : '';
+          throw new Error((data.message || data.error || 'Submission failed') + details + serverDetail);
+        }
+
+        $('submitStatus').innerHTML = `<div class="alert alert-success">Admission submitted successfully. Application No: <b>${esc(data.application_no || '-')}</b></div>`;
+        const nextUrl = data.id ? `students.html?admissionId=${encodeURIComponent(data.id)}` : 'students.html';
+        setTimeout(() => { window.location.href = nextUrl; }, 900);
+      }catch(err){
+        $('submitStatus').innerHTML = `<div class="alert alert-danger">${esc(err.message || 'Server error')}</div>`;
+      }finally{
+        state.submitting = false;
+        $('submitBtn').disabled = false;
+      }
+    });
+
+    wireInputRestrictions();
+    $('confirmAll').addEventListener('change', () => {
+      if($('confirmAll').checked){
+        $('declarationBox').classList.remove('needs-confirm');
+        $('submitStatus').innerHTML = '';
+      }
+    });
+    calcAge();
+    syncPermanentAddress();
+    setStep(1);
+    window.nextStep = nextStep;
+    window.backStep = backStep;
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

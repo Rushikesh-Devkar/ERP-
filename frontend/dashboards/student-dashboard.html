@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Student Dashboard - School ERP</title>
+
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+
+  <!-- Font Awesome -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet" />
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+  <!-- Shared styling -->
+  <link rel="stylesheet" href="../style.css" />
+
+  <style>
+    .student-shell .sidebar{ background: linear-gradient(180deg, #1a102a 0%, #120b22 100%); }
+    .student-topbar{ background: linear-gradient(135deg, rgba(109,94,252,.14), rgba(33,212,253,.10)); }
+    .profile-card{
+      background: rgba(15,27,51,.70);
+      border: 1px solid rgba(255,255,255,.10);
+      border-radius: var(--radius);
+      padding: 1rem;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 18px 45px rgba(0,0,0,.18);
+    }
+    .avatar{
+      width: 72px; height: 72px;
+      border-radius: 22px;
+      background: linear-gradient(135deg, rgba(109,94,252,.95), rgba(33,212,253,.75));
+      display:flex; align-items:center; justify-content:center;
+      box-shadow: 0 14px 30px rgba(109,94,252,.25);
+      flex: 0 0 auto;
+    }
+    .nav-section-title{
+      color: rgba(234,240,255,.62);
+      font-size: .75rem;
+      font-weight: 900;
+      letter-spacing: .04em;
+      margin: .75rem .75rem .35rem;
+    }
+    .top-stat{ border-radius: 18px; }
+  </style>
+</head>
+<body>
+  <div class="app-shell student-shell d-flex">
+
+    <!-- Sidebar -->
+    <nav id="sidebar" class="sidebar d-flex flex-column vh-100 position-sticky top-0">
+      <div class="sidebar-brand">
+        <div class="brand-mark">🏫</div>
+        <div class="brand-text">
+          <strong>School ERP</strong>
+          <span>Student Portal</span>
+        </div>
+      </div>
+
+      <div class="px-2 pb-3">
+        <div class="d-flex gap-2">
+          <button class="btn btn-sm btn-soft rounded-pill" onclick="DashUI.sidebarToggle()" title="Collapse sidebar">
+            <i class="fa-solid fa-bars"></i>
+          </button>
+          <div class="d-none d-md-flex align-items-center ms-auto">
+            <span class="badge rounded-pill bg-transparent border" style="border-color:rgba(255,255,255,.2); color:var(--muted);">Student</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Student profile -->
+      <div class="mx-2 mb-3 profile-card">
+        <div class="d-flex align-items-center gap-3">
+          <div class="avatar">
+            <i class="fa-solid fa-user fs-2" style="color:#fff;"></i>
+          </div>
+          <div class="flex-grow-1">
+            <div id="studentName" class="fw-bold" style="font-size:1rem;">Student Name</div>
+            <div id="studentClass" class="text-muted" style="color:rgba(234,240,255,.65)!important; font-weight:700;">Class —</div>
+            <div id="studentRoll" class="text-muted" style="color:rgba(234,240,255,.65)!important; font-weight:700;">Roll No —</div>
+            <div class="mt-2 d-flex align-items-center gap-2">
+              <span class="badge badge-green rounded-pill">Online</span>
+              <span class="small" style="color:rgba(234,240,255,.65)!important;">Last sync: just now</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sidebar-nav nav flex-column gap-1 px-2 pb-3" style="overflow:auto;">
+        <a class="nav-link active" href="#" data-nav="dashboard" onclick="renderStudentView('dashboard')">
+          <i class="fa-solid fa-gauge-high"></i><span>Dashboard</span>
+        </a>
+
+        <div class="nav-section-title">ACADEMIC</div>
+        <a class="nav-link" href="#" onclick="renderStudentView('myProfile')" data-nav="academic_myProfile"><i class="fa-solid fa-user"></i><span>My Profile</span></a>
+        <a class="nav-link" href="#" onclick="renderStudentView('myAttendance')" data-nav="academic_attendance"><i class="fa-solid fa-calendar-check"></i><span>My Attendance</span></a>
+        <a class="nav-link" href="#" onclick="renderStudentView('myMarks')" data-nav="academic_marks"><i class="fa-solid fa-star-half-stroke"></i><span>My Marks</span></a>
+        <a class="nav-link" href="#" onclick="renderStudentView('myTimetable')" data-nav="academic_timetable"><i class="fa-solid fa-table"></i><span>My Timetable</span></a>
+        <a class="nav-link" href="#" onclick="renderStudentView('mySubjects')" data-nav="academic_subjects"><i class="fa-solid fa-book"></i><span>My Subjects</span></a>
+        <a class="nav-link" href="#" onclick="renderStudentView('examSchedule')" data-nav="academic_exams"><i class="fa-solid fa-chalkboard-user"></i><span>Exam Schedule</span></a>
+        <a class="nav-link" href="#" onclick="renderStudentView('myPerformance')" data-nav="academic_performance"><i class="fa-solid fa-chart-column"></i><span>My Performance</span></a>
+
+        <div class="nav-section-title">FINANCE</div>
+        <a class="nav-link" href="#" onclick="renderStudentView('feeDetails')" data-nav="finance_fees"><i class="fa-solid fa-receipt"></i><span>Fee Details</span></a>
+        <a class="nav-link" href="#" onclick="renderStudentView('paymentHistory')" data-nav="finance_history"><i class="fa-solid fa-receipt"></i><span>Payment History</span></a>
+        <a class="nav-link" href="#" onclick="renderStudentView('feeReceipts')" data-nav="finance_receipts"><i class="fa-solid fa-file-invoice"></i><span>Fee Receipts</span></a>
+
+        <div class="nav-section-title">REQUESTS</div>
+        <a class="nav-link" href="#" onclick="renderStudentView('applyLeave')" data-nav="requests_leave"><i class="fa-solid fa-plane-departure"></i><span>Apply Leave</span></a>
+        <a class="nav-link" href="#" onclick="renderStudentView('documentRequests')" data-nav="requests_docs"><i class="fa-solid fa-file-arrow-up"></i><span>Document Requests</span></a>
+        <a class="nav-link" href="#" onclick="renderStudentView('leaveHistory')" data-nav="requests_leave_history"><i class="fa-solid fa-clock-rotate-left"></i><span>Leave History</span></a>
+
+        <div class="nav-section-title">GENERAL</div>
+        <a class="nav-link" href="#" onclick="renderStudentView('announcements')" data-nav="general_announcements"><i class="fa-solid fa-bullhorn"></i><span>Announcements</span></a>
+        <a class="nav-link" href="#" onclick="renderStudentView('notices')" data-nav="general_notices"><i class="fa-solid fa-bell"></i><span>Notices</span></a>
+        <a class="nav-link" href="#" onclick="renderStudentView('library')" data-nav="general_library"><i class="fa-solid fa-book-open"></i><span>Library</span></a>
+        <a class="nav-link" href="#" onclick="renderStudentView('hostel')" data-nav="general_hostel"><i class="fa-solid fa-bed"></i><span>Hostel</span></a>
+        <a class="nav-link" href="#" onclick="renderStudentView('transport')" data-nav="general_transport"><i class="fa-solid fa-bus"></i><span>Transport</span></a>
+
+        <a class="nav-link mt-2" href="#" onclick="DashUI.logout()"><i class="fa-solid fa-right-from-bracket"></i><span>Logout</span></a>
+      </div>
+    </nav>
+
+    <!-- Main -->
+    <main class="main flex-fill">
+      <div class="topbar student-topbar py-3">
+        <div class="container-fluid px-3 px-md-4">
+          <div class="d-flex align-items-center gap-3">
+            <div class="d-flex d-md-none">
+              <button class="btn btn-soft rounded-pill" onclick="DashUI.sidebarToggle()" aria-label="Toggle sidebar">
+                <i class="fa-solid fa-bars"></i>
+              </button>
+            </div>
+
+            <div class="flex-grow-1">
+              <div class="d-flex align-items-center gap-2">
+                <div class="fw-bold" style="color:rgba(27,42,74,.82);">Welcome</div>
+                <div id="welcomeStudent" class="fw-extrabold" style="color:rgba(27,42,74,.95);">Student</div>
+              </div>
+              <div class="text-muted" style="color:rgba(27,42,74,.65)!important; font-weight:700;">Today • <span id="currentDate"></span></div>
+            </div>
+
+            <div class="d-flex align-items-center gap-2">
+              <button class="btn btn-soft rounded-pill px-3" onclick="notify('Notifications')" title="Notifications">
+                <i class="fa-solid fa-bell"></i>
+              </button>
+
+              <div class="dropdown">
+                <button class="btn btn-soft dropdown-toggle rounded-pill px-3" data-bs-toggle="dropdown" aria-expanded="false">
+                  <i class="fa-solid fa-circle-user me-2"></i>
+                  <span class="d-none d-md-inline">Profile</span>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                  <li><a class="dropdown-item" href="#" onclick="renderStudentView('myProfile')"><i class="fa-solid fa-user me-2"></i>My Profile</a></li>
+                  <li><a class="dropdown-item" href="#" onclick="renderStudentView('feeDetails')"><i class="fa-solid fa-receipt me-2"></i>Fee Details</a></li>
+                  <li><hr class="dropdown-divider"></li>
+                  <li><a class="dropdown-item" href="#" onclick="DashUI.logout()"><i class="fa-solid fa-right-from-bracket me-2"></i>Logout</a></li>
+                </ul>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <div class="container-fluid">
+        <div class="main-inner">
+          <div class="p-3 p-md-4">
+
+            <!-- Top statistics cards -->
+            <section id="student-dashboard" class="mb-3">
+              <div class="row g-3" id="topStats">
+                <div class="col-12 col-md-4 col-lg-2">
+                  <div class="card-glass-light p-3 top-stat h-100">
+                    <div class="d-flex align-items-center justify-content-between">
+                      <div>
+                        <div class="fw-bold" style="color:rgba(27,42,74,.7)">Attendance</div>
+                        <div class="fs-3 fw-extrabold" id="stat-attendance">—</div>
+                      </div>
+                      <i class="fa-solid fa-calendar-check" style="font-size:1.6rem; color:rgba(109,94,252,.95)"></i>
+                    </div>
+                    <div class="small" style="color:rgba(27,42,74,.62)"><i class="fa-solid fa-arrow-trend-up me-1" style="color:rgba(34,197,94,.95)"></i><span id="trend-attendance">+2.4%</span> this month</div>
+                  </div>
+                </div>
+
+                <div class="col-12 col-md-4 col-lg-2">
+                  <div class="card-glass-light p-3 top-stat h-100">
+                    <div class="d-flex align-items-center justify-content-between">
+                      <div>
+                        <div class="fw-bold" style="color:rgba(27,42,74,.7)">Marks</div>
+                        <div class="fs-3 fw-extrabold" id="stat-marks">—</div>
+                      </div>
+                      <i class="fa-solid fa-star-half-stroke" style="font-size:1.6rem; color:rgba(33,212,253,.95)"></i>
+                    </div>
+                    <div class="small" style="color:rgba(27,42,74,.62)"><i class="fa-solid fa-arrow-trend-up me-1" style="color:rgba(34,197,94,.95)"></i><span id="trend-marks">+1.1%</span> trend</div>
+                  </div>
+                </div>
+
+                <div class="col-12 col-md-4 col-lg-2">
+                  <div class="card-glass-light p-3 top-stat h-100">
+                    <div class="d-flex align-items-center justify-content-between">
+                      <div>
+                        <div class="fw-bold" style="color:rgba(27,42,74,.7)">Subjects</div>
+                        <div class="fs-3 fw-extrabold" id="stat-subjects">—</div>
+                      </div>
+                      <i class="fa-solid fa-book" style="font-size:1.6rem; color:rgba(245,158,11,.95)"></i>
+                    </div>
+                    <div class="small" style="color:rgba(27,42,74,.62)"><span id="trend-subjects">+0</span> active</div>
+                  </div>
+                </div>
+
+                <div class="col-12 col-md-4 col-lg-2">
+                  <div class="card-glass-light p-3 top-stat h-100">
+                    <div class="d-flex align-items-center justify-content-between">
+                      <div>
+                        <div class="fw-bold" style="color:rgba(27,42,74,.7)">Pending Fees</div>
+                        <div class="fs-3 fw-extrabold" id="stat-pending-fees">₹ —</div>
+                      </div>
+                      <i class="fa-solid fa-circle-exclamation" style="font-size:1.6rem; color:rgba(239,68,68,.95)"></i>
+                    </div>
+                    <div class="small" style="color:rgba(27,42,74,.62)"><span id="fee-due">Due in 10 days</span></div>
+                  </div>
+                </div>
+
+                <div class="col-12 col-md-4 col-lg-2">
+                  <div class="card-glass-light p-3 top-stat h-100">
+                    <div class="d-flex align-items-center justify-content-between">
+                      <div>
+                        <div class="fw-bold" style="color:rgba(27,42,74,.7)">Leave Balance</div>
+                        <div class="fs-3 fw-extrabold" id="stat-leave">—</div>
+                      </div>
+                      <i class="fa-solid fa-plane-departure" style="font-size:1.6rem; color:rgba(109,94,252,.95)"></i>
+                    </div>
+                    <div class="small" style="color:rgba(27,42,74,.62)"><span id="trend-leave">+1</span> this term</div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- Main sections (dashboard view) -->
+            <div id="student-main">
+              <div class="row g-3">
+
+                <!-- Attendance overview -->
+                <div class="col-12 col-xl-5">
+                  <div class="card-glass p-3 h-100">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                      <h5 class="glass-title m-0"><i class="fa-solid fa-chart-pie me-2"></i>Attendance Overview</h5>
+                      <span class="badge badge-soft rounded-pill">This semester</span>
+                    </div>
+
+                    <div class="d-flex align-items-center gap-4">
+                      <div class="flex-shrink-0" style="width:160px; height:160px; position:relative;">
+                        <canvas id="attendanceCircle" height="160"></canvas>
+                      </div>
+                      <div class="flex-grow-1">
+                        <div class="d-flex justify-content-between mb-2">
+                          <div class="fw-bold text-muted" style="color:rgba(234,240,255,.72)!important;">Attendance %</div>
+                          <div class="fw-extrabold" id="attendancePct">—</div>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                          <div class="fw-bold text-muted" style="color:rgba(234,240,255,.72)!important;">Present Days</div>
+                          <div class="fw-extrabold" id="presentDays">—</div>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                          <div class="fw-bold text-muted" style="color:rgba(234,240,255,.72)!important;">Absent Days</div>
+                          <div class="fw-extrabold" id="absentDays">—</div>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                          <div class="fw-bold text-muted" style="color:rgba(234,240,255,.72)!important;">Leave Days</div>
+                          <div class="fw-extrabold" id="leaveDays">—</div>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                          <div class="fw-bold text-muted" style="color:rgba(234,240,255,.72)!important;">Holiday Count</div>
+                          <div class="fw-extrabold" id="holidayDays">—</div>
+                        </div>
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+
+                <!-- Fees details -->
+                <div class="col-12 col-xl-7">
+                  <div class="card-glass p-3 h-100">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                      <h5 class="glass-title m-0"><i class="fa-solid fa-receipt me-2"></i>Fees Details</h5>
+                      <span class="badge badge-amber rounded-pill">Action required</span>
+                    </div>
+
+                    <div class="row g-3">
+                      <div class="col-12 col-md-5">
+                        <div style="height:180px; position:relative;">
+                          <canvas id="feesProgress" height="180"></canvas>
+                        </div>
+                      </div>
+                      <div class="col-12 col-md-7">
+                        <div class="d-flex justify-content-between mb-2">
+                          <div class="fw-bold text-muted" style="color:rgba(234,240,255,.72)!important;">Total Fees</div>
+                          <div class="fw-extrabold" id="feesTotal">₹ —</div>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                          <div class="fw-bold text-muted" style="color:rgba(234,240,255,.72)!important;">Paid Fees</div>
+                          <div class="fw-extrabold" id="feesPaid">₹ —</div>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                          <div class="fw-bold text-muted" style="color:rgba(234,240,255,.72)!important;">Pending Fees</div>
+                          <div class="fw-extrabold" id="feesPending">₹ —</div>
+                        </div>
+                        <div class="d-flex justify-content-between mb-3">
+                          <div class="fw-bold text-muted" style="color:rgba(234,240,255,.72)!important;">Due Date</div>
+                          <div class="fw-extrabold" id="feesDue">—</div>
+                        </div>
+                        <button class="btn btn-accent rounded-pill w-100" onclick="notify('Fee Payment (placeholder)')">
+                          <i class="fa-solid fa-credit-card me-2"></i>Pay Pending Fees
+                        </button>
+                        <div class="small mt-2" style="color:rgba(234,240,255,.65)!important;">
+                          Placeholder — connect to Fees API when available.
+                        </div>
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+              </div>
+
+              <!-- Quick actions -->
+              <div class="mt-3">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                  <h5 class="glass-title m-0"><i class="fa-solid fa-bolt me-2"></i>Quick Actions</h5>
+                  <span class="badge badge-soft rounded-pill">Student workflows</span>
+                </div>
+
+                <div class="row g-2">
+                  <div class="col-6 col-md-3"><button class="btn btn-soft rounded-pill w-100" onclick="notify('Apply Leave (placeholder)')"><i class="fa-solid fa-plane-departure me-2"></i>Apply Leave</button></div>
+                  <div class="col-6 col-md-3"><button class="btn btn-soft rounded-pill w-100" onclick="notify('Request Document (placeholder)')"><i class="fa-solid fa-file-arrow-up me-2"></i>Request Document</button></div>
+                  <div class="col-6 col-md-3"><button class="btn btn-soft rounded-pill w-100" onclick="renderStudentView('myTimetable')"><i class="fa-solid fa-table me-2"></i>View Timetable</button></div>
+                  <div class="col-6 col-md-3"><button class="btn btn-soft rounded-pill w-100" onclick="renderStudentView('myMarks')"><i class="fa-solid fa-award me-2"></i>View Results</button></div>
+
+                  <div class="col-6 col-md-3"><button class="btn btn-accent rounded-pill w-100" onclick="notify('Fee Payment (placeholder)')"><i class="fa-solid fa-receipt me-2"></i>Fee Payment</button></div>
+                  <div class="col-6 col-md-3"><button class="btn btn-soft rounded-pill w-100" onclick="notify('Download ID Card (placeholder)')"><i class="fa-solid fa-id-card me-2"></i>Download ID Card</button></div>
+                  <div class="col-6 col-md-3"><button class="btn btn-soft rounded-pill w-100" onclick="renderStudentView('library')"><i class="fa-solid fa-book-open me-2"></i>Library</button></div>
+                  <div class="col-6 col-md-3"><button class="btn btn-soft rounded-pill w-100" onclick="renderStudentView('transport')"><i class="fa-solid fa-bus me-2"></i>Transport</button></div>
+                </div>
+              </div>
+
+              <!-- Tables -->
+              <div class="row g-3 mt-3">
+                <div class="col-12 col-lg-6">
+                  <div class="card-glass-light p-3">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                      <h5 class="glass-title m-0"><i class="fa-solid fa-book me-2"></i>Subject Wise Marks</h5>
+                      <button class="btn btn-soft btn-sm rounded-pill" onclick="notify('View All Marks (placeholder)')">View All Marks</button>
+                    </div>
+                    <div class="table-responsive">
+                      <table class="table table-modern mb-0">
+                        <thead>
+                          <tr>
+                            <th>Subject</th>
+                            <th>Obtained</th>
+                            <th>Total</th>
+                            <th>Percentage</th>
+                          </tr>
+                        </thead>
+                        <tbody id="tbl-subject-marks"></tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="col-12 col-lg-6">
+                  <div class="card-glass-light p-3">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                      <h5 class="glass-title m-0"><i class="fa-solid fa-clock me-2"></i>Upcoming Exams</h5>
+                      <button class="btn btn-soft btn-sm rounded-pill" onclick="renderStudentView('examSchedule')">Open Schedule</button>
+                    </div>
+                    <div class="table-responsive">
+                      <table class="table table-modern mb-0">
+                        <thead>
+                          <tr>
+                            <th>Subject</th>
+                            <th>Date</th>
+                            <th>Time</th>
+                          </tr>
+                        </thead>
+                        <tbody id="tbl-upcoming-exams"></tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="row g-3 mt-3">
+                <div class="col-12 col-lg-6">
+                  <div class="card-glass p-3 h-100">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                      <h5 class="glass-title m-0"><i class="fa-solid fa-bullhorn me-2"></i>Announcements</h5>
+                      <button class="btn btn-sm btn-soft rounded-pill" onclick="renderStudentView('announcements')">View all</button>
+                    </div>
+                    <div class="d-flex flex-column gap-2">
+                      <div class="p-2" style="border:1px solid rgba(255,255,255,.10); border-radius:14px; background:rgba(255,255,255,.03)">
+                        <div class="fw-bold"><i class="fa-solid fa-calendar-days me-2" style="color:rgba(33,212,253,.95)"></i>Exam timetable released</div>
+                        <div class="text-muted" style="color:rgba(234,240,255,.65)!important;">Updated today • Click “Exam Schedule”.</div>
+                      </div>
+                      <div class="p-2" style="border:1px solid rgba(255,255,255,.10); border-radius:14px; background:rgba(255,255,255,.03)">
+                        <div class="fw-bold"><i class="fa-solid fa-receipt me-2" style="color:rgba(245,158,11,.95)"></i>Fee reminder</div>
+                        <div class="text-muted" style="color:rgba(234,240,255,.65)!important;">Due date approaching • Pay via Quick Actions.</div>
+                      </div>
+                      <div class="p-2" style="border:1px solid rgba(255,255,255,.10); border-radius:14px; background:rgba(255,255,255,.03)">
+                        <div class="fw-bold"><i class="fa-solid fa-book-open me-2" style="color:rgba(109,94,252,.95)"></i>Library hours extended</div>
+                        <div class="text-muted" style="color:rgba(234,240,255,.65)!important;">From 4:00 PM to 7:00 PM today.</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="col-12 col-lg-6">
+                  <div class="card-glass p-3 h-100">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                      <h5 class="glass-title m-0"><i class="fa-solid fa-clipboard-check me-2"></i>My Leave Requests</h5>
+                      <button class="btn btn-sm btn-soft rounded-pill" onclick="renderStudentView('leaveHistory')">History</button>
+                    </div>
+                    <div class="table-responsive">
+                      <table class="table table-modern mb-0">
+                        <thead>
+                          <tr>
+                            <th>Date</th>
+                            <th>Reason</th>
+                            <th>Status</th>
+                          </tr>
+                        </thead>
+                        <tbody id="tbl-leave-requests"></tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="row g-3 mt-3">
+                <div class="col-12">
+                  <div class="card-glass p-3">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                      <h5 class="glass-title m-0"><i class="fa-solid fa-file-arrow-up me-2"></i>Document Requests</h5>
+                      <button class="btn btn-sm btn-soft rounded-pill" onclick="renderStudentView('documentRequests')">Request</button>
+                    </div>
+                    <div class="table-responsive">
+                      <table class="table table-modern mb-0">
+                        <thead>
+                          <tr>
+                            <th>Document Name</th>
+                            <th>Request Date</th>
+                            <th>Status</th>
+                          </tr>
+                        </thead>
+                        <tbody id="tbl-doc-requests"></tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="row g-3 mt-3">
+                <div class="col-12">
+                  <div class="card-glass-light p-3">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                      <h5 class="glass-title m-0"><i class="fa-solid fa-table me-2"></i>Today Timetable</h5>
+                      <button class="btn btn-soft btn-sm rounded-pill" onclick="renderStudentView('myTimetable')">Open Timetable</button>
+                    </div>
+                    <div class="table-responsive">
+                      <table class="table table-modern mb-0">
+                        <thead>
+                          <tr>
+                            <th>Time</th>
+                            <th>Subject</th>
+                            <th>Faculty</th>
+                            <th>Room</th>
+                          </tr>
+                        </thead>
+                        <tbody id="tbl-today-timetable"></tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Placeholder area for other nav items -->
+            <div id="student-placeholder" class="d-none"></div>
+
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="../script.js"></script>
+
+  <script>
+    DashUI.ensureRole('student');
+    DashUI.hydrateSidebarCollapse();
+
+    function notify(msg){
+      const toastEl = document.createElement('div');
+      toastEl.className = 'position-fixed top-0 end-0 m-3 p-3 rounded-3 text-white';
+      toastEl.style.background = 'rgba(17,24,39,.9)';
+      toastEl.style.backdropFilter = 'blur(10px)';
+      toastEl.style.border = '1px solid rgba(255,255,255,.12)';
+      toastEl.innerHTML = '<div class="fw-bold"><i class="fa-solid fa-circle-info me-2"></i>' + String(msg).replace(/</g,'<') + '</div>';
+      document.body.appendChild(toastEl);
+      setTimeout(() => toastEl.remove(), 2200);
+    }
+
+    // Demo data
+    const demo = {
+      student: {
+        name: 'Aarav Sharma',
+        classText: 'Class 10 - A',
+        rollNo: '10A-023',
+        welcome: 'Aarav'
+      },
+      stats: {
+        attendancePct: 91.2,
+        overallMarksPct: 87.5,
+        subjectsTotal: 7,
+        pendingFees: 18000,
+        leaveBalance: 4
+      },
+      attendance: {
+        presentDays: 23,
+        absentDays: 2,
+        leaveDays: 3,
+        holidayCount: 6
+      },
+      fees: {
+        total: 52000,
+        paid: 34000,
+        pending: 18000,
+        dueDate: '2026-06-12'
+      },
+      marksBySubject: [
+        { subject: 'Mathematics', obtained: 92, total: 100 },
+        { subject: 'Science', obtained: 88, total: 100 },
+        { subject: 'English', obtained: 84, total: 100 },
+        { subject: 'Social Studies', obtained: 79, total: 100 },
+        { subject: 'Computer', obtained: 90, total: 100 }
+      ],
+      upcomingExams: [
+        { subject: 'Mathematics', date: '2026-06-05', time: '10:00 AM' },
+        { subject: 'Science', date: '2026-06-07', time: '11:30 AM' },
+        { subject: 'English', date: '2026-06-10', time: '09:00 AM' }
+      ],
+      leaveRequests: [
+        { date: '2026-05-20', reason: 'Fever', status: 'Approved' },
+        { date: '2026-05-28', reason: 'Family function', status: 'Pending' },
+        { date: '2026-06-01', reason: 'Medical appointment', status: 'Rejected' }
+      ],
+      docRequests: [
+        { name: 'Bonafide Certificate', date: '2026-05-18', status: 'Pending' },
+        { name: 'Leaving Certificate', date: '2026-05-10', status: 'Approved' }
+      ],
+      timetable: [
+        { time: '09:00 - 09:50', subject: 'Mathematics', faculty: 'Dr. Mehta', room: 'A-101' },
+        { time: '10:00 - 10:50', subject: 'Science', faculty: 'Mrs. Roy', room: 'Lab-1' },
+        { time: '11:10 - 12:00', subject: 'English', faculty: 'Mr. Singh', room: 'B-204' },
+        { time: '12:30 - 01:20', subject: 'Computer', faculty: 'Ms. Verma', room: 'Lab-2' }
+      ]
+    };
+
+    // Render
+    function formatINR(num){
+      const n = Number(num || 0);
+      try { return n.toLocaleString('en-IN'); } catch { return String(n); }
+    }
+
+    document.getElementById('studentName').textContent = demo.student.name;
+    document.getElementById('studentClass').textContent = demo.student.classText;
+    document.getElementById('studentRoll').textContent = 'Roll No ' + demo.student.rollNo;
+    document.getElementById('welcomeStudent').textContent = demo.student.welcome;
+    document.getElementById('currentDate').textContent = new Date().toLocaleDateString();
+
+    document.getElementById('stat-attendance').textContent = demo.stats.attendancePct + '%';
+    document.getElementById('stat-marks').textContent = demo.stats.overallMarksPct + '%';
+    document.getElementById('stat-subjects').textContent = demo.stats.subjectsTotal;
+    document.getElementById('stat-pending-fees').textContent = '₹ ' + formatINR(demo.stats.pendingFees);
+    document.getElementById('stat-leave').textContent = demo.stats.leaveBalance;
+
+    document.getElementById('fee-due').textContent = 'Due in 10 days';
+
+    document.getElementById('attendancePct').textContent = demo.stats.attendancePct + '%';
+    document.getElementById('presentDays').textContent = demo.attendance.presentDays;
+    document.getElementById('absentDays').textContent = demo.attendance.absentDays;
+    document.getElementById('leaveDays').textContent = demo.attendance.leaveDays;
+    document.getElementById('holidayDays').textContent = demo.attendance.holidayCount;
+
+    document.getElementById('feesTotal').textContent = '₹ ' + formatINR(demo.fees.total);
+    document.getElementById('feesPaid').textContent = '₹ ' + formatINR(demo.fees.paid);
+    document.getElementById('feesPending').textContent = '₹ ' + formatINR(demo.fees.pending);
+    document.getElementById('feesDue').textContent = new Date(demo.fees.dueDate).toLocaleDateString();
+
+    document.getElementById('tbl-subject-marks').innerHTML = demo.marksBySubject.map(r => {
+      const pct = (r.obtained / r.total) * 100;
+      return `<tr><td><strong>${r.subject}</strong></td><td>${r.obtained}</td><td>${r.total}</td><td><span class="badge badge-soft rounded-pill">${pct.toFixed(1)}%</span></td></tr>`;
+    }).join('');
+
+    document.getElementById('tbl-upcoming-exams').innerHTML = demo.upcomingExams.map(r => {
+      return `<tr><td>${r.subject}</td><td>${new Date(r.date).toLocaleDateString()}</td><td>${r.time}</td></tr>`;
+    }).join('');
+
+    document.getElementById('tbl-leave-requests').innerHTML = demo.leaveRequests.map(r => {
+      const cls = r.status === 'Approved' ? 'badge-green' : (r.status === 'Pending' ? 'badge-amber' : 'badge-red');
+      return `<tr><td>${new Date(r.date).toLocaleDateString()}</td><td>${r.reason}</td><td><span class="badge ${cls} rounded-pill">${r.status}</span></td></tr>`;
+    }).join('');
+
+    document.getElementById('tbl-doc-requests').innerHTML = demo.docRequests.map(r => {
+      const cls = r.status === 'Approved' ? 'badge-green' : (r.status === 'Pending' ? 'badge-amber' : 'badge-red');
+      return `<tr><td>${r.name}</td><td>${new Date(r.date).toLocaleDateString()}</td><td><span class="badge ${cls} rounded-pill">${r.status}</span></td></tr>`;
+    }).join('');
+
+    document.getElementById('tbl-today-timetable').innerHTML = demo.timetable.map(r => {
+      return `<tr><td>${r.time}</td><td>${r.subject}</td><td>${r.faculty}</td><td>${r.room}</td></tr>`;
+    }).join('');
+
+    // Charts
+    new Chart(document.getElementById('attendanceCircle'), {
+      type: 'doughnut',
+      data: {
+        labels: ['Present', 'Absent+Leave+Holiday'],
+        datasets: [{
+          data: [demo.stats.attendancePct, Math.max(0, 100 - demo.stats.attendancePct)],
+          backgroundColor: ['rgba(109,94,252,.95)', 'rgba(255,255,255,.18)'],
+          borderColor: ['rgba(109,94,252,1)', 'rgba(255,255,255,.18)'],
+          borderWidth: 1,
+          hoverOffset: 2
+        }]
+      },
+      options: {
+        responsive: true,
+        cutout: '72%',
+        plugins: { legend: { display: false } }
+      }
+    });
+
+    new Chart(document.getElementById('feesProgress'), {
+      type: 'bar',
+      data: {
+        labels: ['Fees'],
+        datasets: [{
+          label: 'Paid',
+          data: [Math.round((demo.fees.paid / demo.fees.total) * 100)],
+          backgroundColor: ['rgba(33,212,253,.65)'],
+          borderColor: ['rgba(33,212,253,1)'],
+          borderWidth: 1,
+          borderRadius: 10,
+          barThickness: 26
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            beginAtZero: true,
+            max: 100,
+            ticks: { color: 'rgba(234,240,255,.75)' },
+            grid: { color: 'rgba(234,240,255,.08)' }
+          },
+          x: { ticks: { color: 'rgba(234,240,255,.75)' }, grid: { display: false } }
+        },
+        plugins: { legend: { display: false } }
+      }
+    });
+
+    // Navigation placeholders
+    function renderStudentView(view){
+      const placeholderMap = {
+        dashboard: 'Dashboard',
+        myProfile: 'My Profile (placeholder)',
+        myAttendance: 'My Attendance (placeholder)',
+        myMarks: 'My Marks (placeholder)',
+        myTimetable: 'My Timetable (placeholder)',
+        mySubjects: 'My Subjects (placeholder)',
+        examSchedule: 'Exam Schedule (placeholder)',
+        myPerformance: 'My Performance (placeholder)',
+        feeDetails: 'Fee Details (placeholder)',
+        paymentHistory: 'Payment History (placeholder)',
+        feeReceipts: 'Fee Receipts (placeholder)',
+        applyLeave: 'Apply Leave (placeholder)',
+        documentRequests: 'Document Requests (placeholder)',
+        leaveHistory: 'Leave History (placeholder)',
+        announcements: 'Announcements (placeholder)',
+        notices: 'Notices (placeholder)',
+        library: 'Library (placeholder)',
+        hostel: 'Hostel (placeholder)',
+        transport: 'Transport (placeholder)'
+      };
+
+      const studentDashboard = document.getElementById('student-dashboard');
+      const studentMain = document.getElementById('student-main');
+      const placeholder = document.getElementById('student-placeholder');
+
+      if(view === 'dashboard'){
+        placeholder.classList.add('d-none');
+        studentMain.classList.remove('d-none');
+        studentDashboard.classList.remove('d-none');
+      } else {
+        studentMain.classList.add('d-none');
+        studentDashboard.classList.add('d-none');
+        placeholder.classList.remove('d-none');
+        const text = placeholderMap[view] || 'Dashboard';
+        placeholder.innerHTML = `
+          <div class="card-glass-light p-4">
+            <h4 class="glass-title mb-2"><i class="fa-solid fa-layer-group me-2"></i>${text}</h4>
+            <p class="mb-0" style="color:rgba(27,42,74,.65)!important; font-weight:700;">
+              Placeholder view. Connect to Attendance/Marks/Fees/Leave/Document/Timetable APIs when available.
+            </p>
+            <div class="mt-3">
+              <button class="btn btn-accent rounded-pill" onclick="renderStudentView('dashboard')">
+                <i class="fa-solid fa-house me-2"></i>Back to Dashboard
+              </button>
+            </div>
+          </div>
+        `;
+      }
+
+      // Active visuals
+      document.querySelectorAll('[data-nav]').forEach(el => {
+        const navId = el.getAttribute('data-nav');
+        el.classList.toggle('active', (navId && navId.includes(view)) || (view === 'dashboard' && navId === 'dashboard'));
+      });
+    }
+
+    window.renderStudentView = renderStudentView;
+  </script>
+</body>
+</html>
+

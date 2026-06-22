@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard - School ERP</title>
+
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Font Awesome -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+  <link rel="stylesheet" href="../style.css" />
+</head>
+<body>
+
+  <div class="app-shell d-flex">
+    <!-- Sidebar -->
+    <nav id="sidebar" class="sidebar d-flex flex-column vh-100 position-sticky top-0">
+      <div class="sidebar-brand">
+        <div class="brand-mark">🏫</div>
+        <div class="brand-text">
+          <strong>School ERP</strong>
+          <span>Admin Console</span>
+        </div>
+      </div>
+
+      <div class="px-2 pb-3">
+        <div class="d-flex gap-2">
+          <button class="btn btn-sm btn-soft rounded-pill" onclick="DashUI.sidebarToggle()" title="Collapse sidebar">
+            <i class="fa-solid fa-bars"></i>
+          </button>
+          <div class="d-none d-md-flex align-items-center ms-auto">
+            <span class="badge rounded-pill bg-transparent border" style="border-color:rgba(255,255,255,.2); color:var(--muted);">Enterprise</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="sidebar-nav nav flex-column gap-1 px-2 pb-3" style="overflow:auto;">
+        <!-- Dashboard -->
+        <a class="nav-link active" href="#" data-nav="dashboard" onclick="AppViews.render('dashboard')">
+          <i class="fa-solid fa-gauge-high"></i>
+          <span>Dashboard</span>
+        </a>
+
+        <!-- Single continuous vertical menu -->
+        <a class="nav-link" href="./students.html" data-nav="students">
+          <i class="fa-solid fa-user-graduate"></i>
+          <span>Students</span>
+        </a>
+        <a class="nav-link" href="#" onclick="adminNavigate('admissions')" data-nav="admissions">
+          <i class="fa-solid fa-file-signature"></i>
+          <span>Admissions</span>
+        </a>
+
+        <a class="nav-link" href="#" onclick="adminNavigate('attendance')" data-nav="attendance">
+          <i class="fa-solid fa-calendar-check"></i>
+          <span>Attendance</span>
+        </a>
+
+        <a class="nav-link" href="#" onclick="adminNavigate('classes')" data-nav="classes">
+          <i class="fa-solid fa-layer-group"></i>
+          <span>Classes</span>
+        </a>
+
+        <a class="nav-link" href="#" onclick="adminNavigate('subjects')" data-nav="subjects">
+          <i class="fa-solid fa-book"></i>
+          <span>Subjects</span>
+        </a>
+
+        <a class="nav-link" href="#" onclick="adminNavigate('exams_results')" data-nav="exams_results">
+          <i class="fa-solid fa-award"></i>
+          <span>Exams & Results</span>
+        </a>
+
+        <a class="nav-link" href="#" onclick="adminNavigate('fee_collection')" data-nav="fee_collection">
+          <i class="fa-solid fa-receipt"></i>
+          <span>Fee Collection</span>
+        </a>
+
+        <a class="nav-link" href="#" onclick="adminNavigate('fee_reports')" data-nav="fee_reports">
+          <i class="fa-solid fa-file-lines"></i>
+          <span>Fee Reports</span>
+        </a>
+
+        <a class="nav-link" href="/teachers" data-nav="teachers">
+          <i class="fa-solid fa-chalkboard-user"></i>
+          <span>Teachers</span>
+        </a>
+        <a class="nav-link" href="#" onclick="adminNavigate('notices')" data-nav="notices">
+          <i class="fa-solid fa-bullhorn"></i>
+          <span>Notices</span>
+        </a>
+        <a class="nav-link" href="#" onclick="adminNavigate('messages')" data-nav="messages">
+          <i class="fa-regular fa-message"></i>
+          <span>Messages</span>
+        </a>
+
+
+        <a class="nav-link" href="#" onclick="adminNavigate('reports')" data-nav="reports">
+          <i class="fa-solid fa-chart-line"></i>
+          <span>Reports</span>
+        </a>
+
+
+        <a class="nav-link" href="#" onclick="adminNavigate('settings')" data-nav="settings">
+          <i class="fa-solid fa-gear"></i>
+          <span>Settings</span>
+        </a>
+
+
+        <!-- Logout -->
+        <a class="nav-link mt-2" href="#" onclick="DashUI.logout()">
+          <i class="fa-solid fa-right-from-bracket"></i>
+          <span>Logout</span>
+        </a>
+      </div>
+
+    </nav>
+
+    <!-- Main -->
+    <main class="main flex-fill">
+      <div class="topbar py-3">
+        <div class="container-fluid px-3 px-md-4">
+          <div class="d-flex align-items-center gap-3">
+            <div class="d-flex d-md-none">
+              <button class="btn btn-soft rounded-pill" onclick="DashUI.sidebarToggle()" aria-label="Toggle sidebar">
+                <i class="fa-solid fa-bars"></i>
+              </button>
+            </div>
+
+            <div class="flex-grow-1">
+              <div class="input-group" style="max-width:520px;">
+                <span class="input-group-text btn-soft" style="border-radius:14px 0 0 14px; border-right:none;"><i class="fa-solid fa-magnifying-glass"></i></span>
+                <input id="globalSearch" type="text" class="form-control" placeholder="Search students, staff, fees, reports..." />
+              </div>
+            </div>
+
+            <div class="d-flex align-items-center gap-2">
+              <button class="btn btn-soft rounded-pill px-3" title="Notifications" onclick="window.dispatchEvent(new CustomEvent('dash:toast', {detail:'Notifications'}))">
+                <i class="fa-solid fa-bell"></i>
+                <span class="ms-2 d-none d-sm-inline">Notifications</span>
+              </button>
+              <button class="btn btn-soft rounded-pill px-3" title="Messages" onclick="window.dispatchEvent(new CustomEvent('dash:toast', {detail:'Messages'}))">
+                <i class="fa-regular fa-message"></i>
+                <span class="ms-2 d-none d-sm-inline">Messages</span>
+              </button>
+
+              <div class="dropdown">
+                <button class="btn btn-soft dropdown-toggle rounded-pill" data-bs-toggle="dropdown" aria-expanded="false">
+                  <i class="fa-solid fa-circle-user me-2"></i>
+                  <span class="d-none d-md-inline">Admin</span>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                  <li><a class="dropdown-item" href="#" onclick="AppViews.render('dashboard')"><i class="fa-solid fa-user me-2"></i>Profile</a></li>
+                  <li><a class="dropdown-item" href="#" onclick="AppViews.render('dashboard')"><i class="fa-solid fa-sliders me-2"></i>Settings</a></li>
+                  <li><hr class="dropdown-divider"></li>
+                  <li><a class="dropdown-item" href="#" onclick="DashUI.logout()"><i class="fa-solid fa-right-from-bracket me-2"></i>Logout</a></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="container-fluid">
+        <div class="main-inner">
+          <div class="p-3 p-md-4">
+            <!-- Quick Actions -->
+            <section class="mb-3">
+              <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+                <div>
+                  <h4 class="m-0 glass-title"><i class="fa-solid fa-bolt me-2"></i>Quick Actions</h4>
+                  <div class="text-muted" style="color:rgba(27,42,74,.65)!important;">Fast workflows for everyday admin operations.</div>
+                </div>
+                <div class="d-flex gap-2 flex-wrap">
+                  <button class="btn btn-accent rounded-pill" onclick="location.href='students.html'"><i class="fa-solid fa-user-plus me-2"></i>Add Student</button>
+                  <button class="btn btn-soft rounded-pill" onclick="location.href='/staff/add'"><i class="fa-solid fa-user-tie me-2"></i>Add Staff</button>
+                  <button class="btn btn-soft rounded-pill" onclick="location.href='/staff'"><i class="fa-solid fa-users me-2"></i>Staff Directory</button>
+<button class="btn btn-soft rounded-pill" onclick="location.href='admissions.html'"><i class="fa-solid fa-file-signature me-2"></i>New Admission</button>
+                  <button class="btn btn-soft rounded-pill" onclick="AppViews.render('dashboard')"><i class="fa-solid fa-calendar-check me-2"></i>Mark Attendance</button>
+                  <button class="btn btn-soft rounded-pill" onclick="AppViews.render('dashboard')"><i class="fa-solid fa-upload me-2"></i>Upload Results</button>
+                  <button class="btn btn-soft rounded-pill" onclick="AppViews.render('dashboard')"><i class="fa-solid fa-receipt me-2"></i>Manage Fees</button>
+                  <button class="btn btn-soft rounded-pill" onclick="AppViews.render('dashboard')"><i class="fa-solid fa-id-card me-2"></i>Generate ID Cards</button>
+                  <button class="btn btn-soft rounded-pill" onclick="AppViews.render('dashboard')"><i class="fa-solid fa-check-double me-2"></i>Approve Leaves</button>
+                  <button class="btn btn-soft rounded-pill" onclick="AppViews.render('dashboard')"><i class="fa-solid fa-chart-pie me-2"></i>View Reports</button>
+                </div>
+              </div>
+            </section>
+
+            <!-- Widgets -->
+            <section class="mb-3">
+              <div class="row g-3" id="widgets">
+                <div class="col-6 col-lg-3">
+                  <div class="card-glass-light p-3 h-100">
+                    <div class="d-flex align-items-center justify-content-between">
+                      <div>
+                        <div class="metric" id="w-total-students">—</div>
+                        <div class="metric-sub">Total Students</div>
+                      </div>
+                      <i class="fa-solid fa-graduation-cap" style="font-size:1.8rem; color:rgba(109,94,252,.9)"></i>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-6 col-lg-3">
+                  <div class="card-glass-light p-3 h-100">
+                    <div class="d-flex align-items-center justify-content-between">
+                      <div>
+                        <div class="metric" id="w-total-staff">—</div>
+                        <div class="metric-sub">Total Staff</div>
+                      </div>
+                      <i class="fa-solid fa-user-tie" style="font-size:1.8rem; color:rgba(33,212,253,.9)"></i>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-6 col-lg-3">
+                  <div class="card-glass-light p-3 h-100">
+                    <div class="d-flex align-items-center justify-content-between">
+                      <div>
+                        <div class="metric" id="w-total-admissions">—</div>
+                        <div class="metric-sub">Total Teachers</div>
+                      </div>
+                      <i class="fa-solid fa-chalkboard-user" style="font-size:1.8rem; color:rgba(109,94,252,.9)"></i>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-6 col-lg-3">
+                  <div class="card-glass-light p-3 h-100">
+                    <div class="d-flex align-items-center justify-content-between">
+                      <div>
+                        <div class="metric" id="w-active-staff">—</div>
+                        <div class="metric-sub">Active Staff</div>
+                      </div>
+                      <span class="badge badge-green rounded-pill px-3 py-2">Active</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-6 col-lg-3">
+                  <div class="card-glass-light p-3 h-100">
+                    <div class="d-flex align-items-center justify-content-between">
+                      <div>
+                        <div class="metric" id="w-new-joiners">—</div>
+                        <div class="metric-sub">New Joiners</div>
+                      </div>
+                      <i class="fa-solid fa-user-check" style="font-size:1.8rem; color:rgba(34,197,94,.95)"></i>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-6 col-lg-3">
+                  <div class="card-glass-light p-3 h-100">
+                    <div class="d-flex align-items-center justify-content-between">
+                      <div>
+                        <div class="metric" id="w-total-teachers">—</div>
+                        <div class="metric-sub">Total Admissions</div>
+                      </div>
+                      <i class="fa-solid fa-file-signature" style="font-size:1.8rem; color:rgba(245,158,11,.95)"></i>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-6 col-lg-3">
+                  <div class="card-glass-light p-3 h-100">
+                    <div class="d-flex align-items-center justify-content-between">
+                      <div>
+                        <div class="metric" id="w-active-classes">—</div>
+                        <div class="metric-sub">Active Classes</div>
+                      </div>
+                      <i class="fa-solid fa-layer-group" style="font-size:1.8rem; color:rgba(34,197,94,.95)"></i>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="col-6 col-lg-3">
+                  <div class="card-glass-light p-3 h-100">
+                    <div class="d-flex align-items-center justify-content-between">
+                      <div>
+                        <div class="metric" id="w-present">—</div>
+                        <div class="metric-sub">Present Students</div>
+                      </div>
+                      <span class="badge badge-green rounded-pill px-3 py-2">Live</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-6 col-lg-3">
+                  <div class="card-glass-light p-3 h-100">
+                    <div class="d-flex align-items-center justify-content-between">
+                      <div>
+                        <div class="metric" id="w-absent">—</div>
+                        <div class="metric-sub">Absent Students</div>
+                      </div>
+                      <i class="fa-solid fa-circle-xmark" style="font-size:1.8rem; color:rgba(239,68,68,.95)"></i>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-6 col-lg-3">
+                  <div class="card-glass-light p-3 h-100">
+                    <div class="d-flex align-items-center justify-content-between">
+                      <div>
+                        <div class="metric" id="w-fees-collected">—</div>
+                        <div class="metric-sub">Fees Collected</div>
+                      </div>
+                      <i class="fa-solid fa-receipt" style="font-size:1.8rem; color:rgba(109,94,252,.9)"></i>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-6 col-lg-3">
+                  <div class="card-glass-light p-3 h-100">
+                    <div class="d-flex align-items-center justify-content-between">
+                      <div>
+                        <div class="metric" id="w-pending-fees">—</div>
+                        <div class="metric-sub">Pending Fees</div>
+                      </div>
+                      <span class="badge badge-amber rounded-pill px-3 py-2">Due</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="col-6 col-lg-3">
+                  <div class="card-glass-light p-3 h-100">
+                    <div class="d-flex align-items-center justify-content-between">
+                      <div>
+                        <div class="metric" id="w-staff-on-leave">—</div>
+                        <div class="metric-sub">Staff on Leave</div>
+                      </div>
+                      <i class="fa-solid fa-plane-departure" style="font-size:1.8rem; color:rgba(245,158,11,.95)"></i>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-6 col-lg-3">
+                  <div class="card-glass-light p-3 h-100">
+                    <div class="d-flex align-items-center justify-content-between">
+                      <div>
+                        <div class="metric" id="w-student-leave-requests">—</div>
+                        <div class="metric-sub">Student Leave Requests</div>
+                      </div>
+                      <i class="fa-solid fa-file-import" style="font-size:1.8rem; color:rgba(33,212,253,.9)"></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- Main grid -->
+            <section class="row g-3">
+              <!-- Left: Cards -->
+              <div class="col-12 col-xl-8">
+                <div class="row g-3">
+
+                  <div class="col-12 col-lg-6">
+                    <div class="card-glass p-3">
+                      <div class="d-flex align-items-center justify-content-between mb-2">
+                        <h5 class="glass-title m-0"><i class="fa-solid fa-file-signature me-2"></i>Recent Admissions</h5>
+                        <a href="#" onclick="AppViews.render('dashboard')" class="text-decoration-none" style="color:rgba(33,212,253,.95); font-weight:800;">View all</a>
+                      </div>
+                      <div class="table-responsive">
+                        <table class="table table-modern mb-0">
+                          <thead>
+                            <tr>
+                              <th>Student Name</th>
+                              <th>Class</th>
+                              <th>Admission Date</th>
+                              <th>Status</th>
+                            </tr>
+                          </thead>
+                          <tbody id="tbl-admissions">
+                            <tr><td>—</td><td>—</td><td>—</td><td><span class="badge badge-soft rounded-pill">Pending</span></td></tr>
+                            <tr><td>—</td><td>—</td><td>—</td><td><span class="badge badge-green rounded-pill">Approved</span></td></tr>
+                            <tr><td>—</td><td>—</td><td>—</td><td><span class="badge badge-amber rounded-pill">Review</span></td></tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="col-12 col-lg-6">
+                    <div class="card-glass p-3">
+                      <div class="d-flex align-items-center justify-content-between mb-2">
+                        <h5 class="glass-title m-0"><i class="fa-solid fa-clipboard-check me-2"></i>Recent Leave Requests</h5>
+                        <a href="#" onclick="AppViews.render('dashboard')" class="text-decoration-none" style="color:rgba(33,212,253,.95); font-weight:800;">View all</a>
+                      </div>
+                      <div class="table-responsive">
+                        <table class="table table-modern mb-0">
+                          <thead>
+                            <tr>
+                              <th>Name</th>
+                              <th>Role</th>
+                              <th>Leave Type</th>
+                              <th>Days</th>
+                              <th>Status</th>
+                              <th>Action</th>
+                            </tr>
+                          </thead>
+                          <tbody id="tbl-leaves">
+                            <tr>
+                              <td>—</td><td>Student</td><td>Medical</td><td>2</td>
+                              <td><span class="badge badge-amber rounded-pill">Pending</span></td>
+                              <td><button class="btn btn-sm btn-soft rounded-pill" onclick="AppViews.render('dashboard')">Review</button></td>
+                            </tr>
+                            <tr>
+                              <td>—</td><td>Staff</td><td>Casual</td><td>1</td>
+                              <td><span class="badge badge-green rounded-pill">Approved</span></td>
+                              <td><button class="btn btn-sm btn-soft rounded-pill" onclick="AppViews.render('dashboard')">View</button></td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="col-12">
+                    <div class="card-glass p-3">
+                      <div class="d-flex align-items-center justify-content-between mb-2">
+                        <h5 class="glass-title m-0"><i class="fa-solid fa-file-arrow-down me-2"></i>Recent Document Requests</h5>
+                        <a href="#" onclick="AppViews.render('dashboard')" class="text-decoration-none" style="color:rgba(33,212,253,.95); font-weight:800;">View all</a>
+                      </div>
+                      <div class="table-responsive">
+                        <table class="table table-modern mb-0">
+                          <thead>
+                            <tr>
+                              <th>Student Name</th>
+                              <th>Document Type</th>
+                              <th>Request Date</th>
+                              <th>Status</th>
+                            </tr>
+                          </thead>
+                          <tbody id="tbl-docs">
+                            <tr><td>—</td><td>Bonafide</td><td>—</td><td><span class="badge badge-soft rounded-pill">Pending</span></td></tr>
+                            <tr><td>—</td><td>Leaving Certificate</td><td>—</td><td><span class="badge badge-green rounded-pill">Approved</span></td></tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Right: Notification Center + Dynamic content -->
+              <div class="col-12 col-xl-4">
+                <div class="card-glass p-3 h-100">
+                  <div class="d-flex align-items-center justify-content-between mb-3">
+                    <h5 class="glass-title m-0"><i class="fa-solid fa-bell me-2"></i>Notification Center</h5>
+                    <span class="badge badge-soft rounded-pill">Admin</span>
+                  </div>
+
+                  <div class="d-flex flex-column gap-2" id="notifList">
+                    <div class="d-flex align-items-start justify-content-between gap-2 p-2" style="border:1px solid rgba(255,255,255,.10); border-radius:14px; background:rgba(255,255,255,.03);">
+                      <div>
+                        <div class="fw-bold"><i class="fa-solid fa-hourglass-half me-2" style="color:rgba(245,158,11,.95)"></i>Pending Leave Requests</div>
+                        <div class="text-muted" style="color:rgba(234,240,255,.65)!important;">2 requests need approval.</div>
+                      </div>
+                      <button class="btn btn-sm btn-soft rounded-pill" onclick="AppViews.render('dashboard')">Review</button>
+                    </div>
+
+                    <div class="d-flex align-items-start justify-content-between gap-2 p-2" style="border:1px solid rgba(255,255,255,.10); border-radius:14px; background:rgba(255,255,255,.03);">
+                      <div>
+                        <div class="fw-bold"><i class="fa-solid fa-circle-exclamation me-2" style="color:rgba(245,158,11,.95)"></i>Pending Fee Payments</div>
+                        <div class="text-muted" style="color:rgba(234,240,255,.65)!important;">₹180,000 pending.</div>
+                      </div>
+                      <button class="btn btn-sm btn-soft rounded-pill" onclick="AppViews.render('dashboard')">Manage</button>
+                    </div>
+
+                    <div class="d-flex align-items-start justify-content-between gap-2 p-2" style="border:1px solid rgba(255,255,255,.10); border-radius:14px; background:rgba(255,255,255,.03);">
+                      <div>
+                        <div class="fw-bold"><i class="fa-solid fa-user-plus me-2" style="color:rgba(33,212,253,.95)"></i>New Admissions</div>
+                        <div class="text-muted" style="color:rgba(234,240,255,.65)!important;">1 application received.</div>
+                      </div>
+                      <button class="btn btn-sm btn-soft rounded-pill" onclick="AppViews.render('dashboard')">Open</button>
+                    </div>
+
+                    <div class="d-flex align-items-start justify-content-between gap-2 p-2" style="border:1px solid rgba(255,255,255,.10); border-radius:14px; background:rgba(255,255,255,.03);">
+                      <div>
+                        <div class="fw-bold"><i class="fa-solid fa-file-lines me-2" style="color:rgba(109,94,252,.95)"></i>Document Requests</div>
+                        <div class="text-muted" style="color:rgba(234,240,255,.65)!important;">3 documents in queue.</div>
+                      </div>
+                      <button class="btn btn-sm btn-soft rounded-pill" onclick="AppViews.render('dashboard')">View</button>
+                    </div>
+
+                    <div class="d-flex align-items-start justify-content-between gap-2 p-2" style="border:1px solid rgba(255,255,255,.10); border-radius:14px; background:rgba(255,255,255,.03);">
+                      <div>
+                        <div class="fw-bold"><i class="fa-solid fa-shield-halved me-2" style="color:rgba(34,197,94,.95)"></i>Attendance Alerts</div>
+                        <div class="text-muted" style="color:rgba(234,240,255,.65)!important;">Daily alerts configured.</div>
+                      </div>
+                      <button class="btn btn-sm btn-soft rounded-pill" onclick="AppViews.render('dashboard')">Alerts</button>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+
+            </section>
+
+
+            <!-- Dedicated dynamic area for wired endpoints -->
+            <section class="mt-3">
+              <div id="mainContent" class="d-none"></div>
+              <div id="wiredArea">
+
+                <div class="card-glass-light p-3">
+                  <div class="d-flex align-items-center justify-content-between">
+                    <h5 class="glass-title m-0"><i class="fa-solid fa-layer-group me-2"></i>Admin Workflow Center</h5>
+                    <span class="badge rounded-pill bg-transparent" style="border:1px solid rgba(27,42,74,.15); color:rgba(27,42,74,.7);">Demo + wired endpoints</span>
+                  </div>
+                  <p class="mb-0" style="color:rgba(27,42,74,.65)!important;">
+                    Student/Staff add and list are wired to existing backend endpoints.
+                    All other navigation items use safe placeholders.
+                  </p>
+                </div>
+
+                <div class="row g-3 mt-3">
+                  <div class="col-12 col-lg-6">
+                    <div class="card-glass p-3">
+                      <div class="d-flex align-items-center justify-content-between mb-2">
+                        <h5 class="glass-title m-0"><i class="fa-solid fa-user-graduate me-2"></i>Student Management (wired)</h5>
+                        <button class="btn btn-sm btn-soft rounded-pill" onclick="loadStudents()"><i class="fa-solid fa-rotate"></i> Refresh</button>
+                      </div>
+                      <div id="studentsBox">Loading students...</div>
+                    </div>
+                  </div>
+
+                  <div class="col-12 col-lg-6">
+                    <div class="card-glass p-3">
+                      <div class="d-flex align-items-center justify-content-between mb-2">
+                        <h5 class="glass-title m-0"><i class="fa-solid fa-user-tie me-2"></i>Staff Management (wired)</h5>
+                        <button class="btn btn-sm btn-soft rounded-pill" onclick="loadStaff()"><i class="fa-solid fa-rotate"></i> Refresh</button>
+                      </div>
+                      <div id="staffBox">Loading staff...</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script src="../script.js"></script>
+
+  <script>
+    // Role guard
+    DashUI.ensureRole('admin');
+    DashUI.hydrateSidebarCollapse();
+
+    // Small toast wiring (optional)
+    window.addEventListener('dash:toast', (e) => {
+      console.log('toast:', e.detail);
+    });
+
+    const token = localStorage.getItem('token');
+
+    async function apiCall(endpoint, options = {}){
+      return DashAPI.apiCall(endpoint, options);
+    }
+
+    function safeText(v){
+      if(v === null || v === undefined) return '—';
+      return String(v);
+    }
+
+    function formatINR(num){
+      const n = Number(num || 0);
+      try{ return n.toLocaleString('en-IN'); }catch{ return String(n); }
+    }
+
+    function setWidgetDefaults(){
+      // These are demo values; only totals below can be derived from wired endpoints.
+      document.getElementById('w-total-admissions').textContent = '—';
+      document.getElementById('w-active-classes').textContent = '—';
+      document.getElementById('w-present').textContent = '—';
+      document.getElementById('w-absent').textContent = '—';
+      document.getElementById('w-fees-collected').textContent = '₹ —';
+      document.getElementById('w-pending-fees').textContent = '₹ —';
+      document.getElementById('w-staff-on-leave').textContent = '—';
+      document.getElementById('w-student-leave-requests').textContent = '—';
+    }
+
+    async function loadStudents(){
+      const box = document.getElementById('studentsBox');
+      box.innerHTML = '<div class="text-center" style="color:rgba(234,240,255,.7)">Loading students...</div>';
+      try{
+        const students = await apiCall('/admin/students');
+        const total = Array.isArray(students) ? students.length : 0;
+        document.getElementById('w-total-students').textContent = total;
+
+        box.innerHTML = `
+          <div class="mb-3">
+            <button class="btn btn-accent btn-sm rounded-pill" onclick="showStudentCreate()"><i class="fa-solid fa-plus me-2"></i>Add Student</button>
+          </div>
+          <div class="table-responsive">
+            <table class="table table-modern" style="color:var(--lightText)">
+              <thead>
+                <tr>
+                  <th>Student</th>
+                  <th>Class</th>
+                  <th>Roll No</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${(students || []).slice(0,8).map(s => `
+                  <tr>
+                    <td>${safeText(s.userId?.name)}</td>
+                    <td>${safeText(s.class)}</td>
+                    <td>${safeText(s.rollNo)}</td>
+                  </tr>
+                `).join('') || '<tr><td colspan="3">No students found</td></tr>'}
+              </tbody>
+            </table>
+          </div>
+        `;
+      }catch(err){
+        box.innerHTML = `<div class="text-danger">Failed to load students: ${safeText(err.message)}</div>`;
+      }
+    }
+
+    async function loadStaff(){
+      const box = document.getElementById('staffBox');
+      box.innerHTML = '<div class="text-center" style="color:rgba(234,240,255,.7)">Loading staff...</div>';
+      try{
+        const staff = await apiCall('/admin/staff');
+        const total = Array.isArray(staff) ? staff.length : 0;
+        document.getElementById('w-total-staff').textContent = total;
+
+        box.innerHTML = `
+          <div class="mb-3">
+            <button class="btn btn-accent btn-sm rounded-pill" onclick="location.href='add-staff.html'"><i class="fa-solid fa-plus me-2"></i>Add Staff</button>
+          </div>
+          <div class="table-responsive">
+            <table class="table table-modern" style="color:var(--lightText)">
+              <thead>
+                <tr>
+                  <th>Staff</th>
+                  <th>Subject</th>
+                  <th>Salary</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${(staff || []).slice(0,8).map(s => `
+                  <tr>
+                    <td>${safeText(s.userId?.name)}</td>
+                    <td>${safeText(s.subject)}</td>
+                    <td>₹${safeText(s.salary)}</td>
+                  </tr>
+                `).join('') || '<tr><td colspan="3">No staff found</td></tr>'}
+              </tbody>
+            </table>
+          </div>
+        `;
+      }catch(err){
+        box.innerHTML = `<div class="text-danger">Failed to load staff: ${safeText(err.message)}</div>`;
+      }
+    }
+
+    function showStudentCreate(){
+      const box = document.getElementById('studentsBox');
+      box.innerHTML = `
+        <form id="studentCreateForm" class="d-flex flex-column gap-2">
+          <div class="row g-2">
+            <div class="col-12 col-md-6"><input class="form-control" id="st_name" placeholder="Full Name" required /></div>
+            <div class="col-12 col-md-6"><input class="form-control" type="email" id="st_email" placeholder="Email" required /></div>
+          </div>
+          <div class="row g-2">
+            <div class="col-12 col-md-6"><input class="form-control" type="password" id="st_password" placeholder="Password" required /></div>
+            <div class="col-12 col-md-6"><input class="form-control" id="st_class" placeholder="Class (e.g., 10A)" required /></div>
+          </div>
+          <div class="row g-2">
+            <div class="col-12 col-md-6"><input class="form-control" id="st_roll" placeholder="Roll Number" required /></div>
+            <div class="col-12 col-md-6"><input class="form-control" id="st_parent" placeholder="Parent Name" required /></div>
+          </div>
+          <div class="d-flex gap-2">
+            <button class="btn btn-accent rounded-pill" type="submit"><i class="fa-solid fa-check me-2"></i>Create Student</button>
+            <button class="btn btn-soft rounded-pill" type="button" onclick="loadStudents()">Cancel</button>
+          </div>
+        </form>
+      `;
+
+      document.getElementById('studentCreateForm').onsubmit = async (e) => {
+        e.preventDefault();
+        try{
+          await apiCall('/admin/students', {
+            method: 'POST',
+            body: JSON.stringify({
+              name: document.getElementById('st_name').value,
+              email: document.getElementById('st_email').value,
+              password: document.getElementById('st_password').value,
+              class: document.getElementById('st_class').value,
+              rollNo: document.getElementById('st_roll').value,
+              parentName: document.getElementById('st_parent').value,
+            })
+          });
+          alert('Student created successfully!');
+          await loadStudents();
+        }catch(err){
+          alert('Error: ' + (err.message || err));
+        }
+      };
+    }
+
+    function showStaffCreate(){
+      const box = document.getElementById('staffBox');
+      box.innerHTML = `
+        <form id="staffCreateForm" class="d-flex flex-column gap-2">
+          <div class="row g-2">
+            <div class="col-12 col-md-6"><input class="form-control" id="sf_name" placeholder="Full Name" required /></div>
+            <div class="col-12 col-md-6"><input class="form-control" type="email" id="sf_email" placeholder="Email" required /></div>
+          </div>
+          <div class="row g-2">
+            <div class="col-12 col-md-6"><input class="form-control" type="password" id="sf_password" placeholder="Password" required /></div>
+            <div class="col-12 col-md-6"><input class="form-control" id="sf_subject" placeholder="Subject" required /></div>
+          </div>
+          <div class="row g-2">
+            <div class="col-12 col-md-6"><input class="form-control" type="number" id="sf_salary" placeholder="Salary" required /></div>
+            <div class="col-12 col-md-6">
+              <input class="form-control" id="sf_dept" placeholder="Department (placeholder)" disabled value="—" />
+            </div>
+          </div>
+          <div class="d-flex gap-2">
+            <button class="btn btn-accent rounded-pill" type="submit"><i class="fa-solid fa-check me-2"></i>Create Staff</button>
+            <button class="btn btn-soft rounded-pill" type="button" onclick="loadStaff()">Cancel</button>
+          </div>
+        </form>
+      `;
+
+      document.getElementById('staffCreateForm').onsubmit = async (e) => {
+        e.preventDefault();
+        try{
+          await apiCall('/admin/staff', {
+            method: 'POST',
+            body: JSON.stringify({
+              name: document.getElementById('sf_name').value,
+              email: document.getElementById('sf_email').value,
+              password: document.getElementById('sf_password').value,
+              subject: document.getElementById('sf_subject').value,
+              salary: parseInt(document.getElementById('sf_salary').value, 10)
+            })
+          });
+          alert('Staff created successfully!');
+          await loadStaff();
+        }catch(err){
+          alert('Error: ' + (err.message || err));
+        }
+      };
+    }
+
+    // Wire navigation to content: just switch wired area focus or render placeholder.
+    // Current design keeps tables/charts visible; AppViews.render just updates hidden mainContent.
+
+    // Charts (removed from UI)
+    // window.addEventListener('load', () => {
+    //   try{ DashCharts.initCharts(); }catch(e){ console.warn('Charts init failed', e); }
+    // });
+
+
+    // Search placeholder
+    document.getElementById('globalSearch').addEventListener('input', (e) => {
+      // Safe placeholder: do nothing heavy.
+      console.log('Search:', e.target.value);
+    });
+
+    // Admin navigation (wired to backend extended admin APIs)
+    async function adminNavigate(view){
+      const wired = document.getElementById('wiredArea');
+      const mainContent = document.getElementById('mainContent');
+      if(mainContent) mainContent.classList.add('d-none');
+
+      // hide workflow center when navigating
+      if(wired) wired.classList.add('d-none');
+
+      const root = document.getElementById('widgets')?.closest('main')?.querySelector('.container-fluid .main-inner .p-3.p-md-4');
+      const mount = document.getElementById('adminMount') || document.createElement('div');
+      mount.id = 'adminMount';
+      if(root){
+        mount.innerHTML = ''; 
+        root.appendChild(mount);
+      }
+
+      const renderBlock = (html) => {
+        mount.innerHTML = html;
+      };
+
+      const showLoading = (title) => renderBlock(`<div class="card-glass-light p-3"><div class="fw-bold">${title}</div><div class="text-muted" style="color:rgba(27,42,74,.65)!important; font-weight:700;">Loading...</div></div>`);
+
+      try{
+        switch(view){
+          case 'admissions':
+            showLoading('Admissions');
+            {
+              const admissions = await apiCall('/admin/admissions');
+              renderBlock(`
+                <div class="card-glass p-3">
+                  <div class="d-flex align-items-center justify-content-between mb-2">
+                    <h5 class="glass-title m-0"><i class="fa-solid fa-file-signature me-2"></i>Admissions</h5>
+                    <span class="badge badge-soft rounded-pill">${Array.isArray(admissions)?admissions.length:0} records</span>
+                  </div>
+                  <div class="table-responsive">
+                    <table class="table table-modern mb-0" style="color:var(--lightText)">
+                      <thead><tr><th>Student</th><th>Class</th><th>Roll No</th><th>Parent</th></tr></thead>
+                      <tbody>${(admissions||[]).slice(0,12).map(s=>`<tr><td>${safeText(s.userId?.name)}</td><td>${safeText(s.class)}</td><td>${safeText(s.rollNo)}</td><td>${safeText(s.parentName)}</td></tr>`).join('')}</tbody>
+                    </table>
+                  </div>
+                </div>`);
+            }
+            break;
+          case 'attendance':
+            showLoading('Attendance');
+            {
+              const data = await apiCall('/admin/attendance');
+              renderBlock(`
+                <div class="card-glass p-3">
+                  <div class="d-flex align-items-center justify-content-between mb-2">
+                    <h5 class="glass-title m-0"><i class="fa-solid fa-calendar-check me-2"></i>Attendance</h5>
+                  </div>
+                  <div class="small" style="color:rgba(27,42,74,.65)!important; font-weight:800;">Showing latest entries: ${(Array.isArray(data)?data.length:0)}</div>
+                </div>`);
+            }
+            break;
+          case 'classes':
+            showLoading('Classes');
+            {
+              const data = await apiCall('/admin/classes');
+              renderBlock(`
+                <div class="card-glass p-3">
+                  <div class="d-flex align-items-center justify-content-between mb-2">
+                    <h5 class="glass-title m-0"><i class="fa-solid fa-layer-group me-2"></i>Classes</h5>
+                  </div>
+                  <div class="table-responsive">
+                    <table class="table table-modern mb-0" style="color:var(--lightText)">
+                      <thead><tr><th>Name</th><th>Sort</th></tr></thead>
+                      <tbody>${(data||[]).slice(0,20).map(c=>`<tr><td>${safeText(c.name)}</td><td>${safeText(c.sortOrder)}</td></tr>`).join('')}</tbody>
+                    </table>
+                  </div>
+                </div>`);
+            }
+            break;
+          case 'subjects':
+            showLoading('Subjects');
+            {
+              const data = await apiCall('/admin/subjects');
+              renderBlock(`
+                <div class="card-glass p-3">
+                  <div class="d-flex align-items-center justify-content-between mb-2">
+                    <h5 class="glass-title m-0"><i class="fa-solid fa-book me-2"></i>Subjects</h5>
+                  </div>
+                  <div class="table-responsive">
+                    <table class="table table-modern mb-0" style="color:var(--lightText)">
+                      <thead><tr><th>Subject</th></tr></thead>
+                      <tbody>${(data||[]).slice(0,30).map(s=>`<tr><td>${safeText(s.name)}</td></tr>`).join('')}</tbody>
+                    </table>
+                  </div>
+                </div>`);
+            }
+            break;
+          case 'exams_results':
+            showLoading('Exams & Results');
+            {
+              const exams = await apiCall('/admin/exams');
+              renderBlock(`
+                <div class="card-glass p-3">
+                  <div class="d-flex align-items-center justify-content-between mb-2">
+                    <h5 class="glass-title m-0"><i class="fa-solid fa-award me-2"></i>Exams & Results</h5>
+                    <span class="badge badge-soft rounded-pill">${Array.isArray(exams)?exams.length:0} exams</span>
+                  </div>
+                  <div class="small" style="color:rgba(27,42,74,.65)!important; font-weight:800;">To compute results summary, open Fee/Reports area later. (API exists)</div>
+                </div>`);
+            }
+            break;
+          case 'fee_collection':
+            showLoading('Fee Collection');
+            {
+              renderBlock(`
+                <div class="card-glass p-3">
+                  <h5 class="glass-title m-0"><i class="fa-solid fa-receipt me-2"></i>Fee Collection</h5>
+                  <div class="text-muted" style="color:rgba(27,42,74,.65)!important; font-weight:700;">API ready: POST /api/admin/fees/pay and GET /api/admin/fee-records?studentId=...</div>
+                </div>`);
+            }
+            break;
+          case 'fee_reports':
+            showLoading('Fee Reports');
+            {
+              renderBlock(`
+                <div class="card-glass p-3">
+                  <h5 class="glass-title m-0"><i class="fa-solid fa-file-lines me-2"></i>Fee Reports</h5>
+                  <div class="text-muted" style="color:rgba(27,42,74,.65)!important; font-weight:700;">Use GET /api/admin/fee-records to generate report views.</div>
+                </div>`);
+            }
+            break;
+          case 'notices':
+            showLoading('Notices');
+            {
+              const items = await apiCall('/admin/notices');
+              renderBlock(`
+                <div class="card-glass p-3">
+                  <div class="d-flex align-items-center justify-content-between mb-2">
+                    <h5 class="glass-title m-0"><i class="fa-solid fa-bullhorn me-2"></i>Notices</h5>
+                    <span class="badge badge-soft rounded-pill">${Array.isArray(items)?items.length:0}</span>
+                  </div>
+                  <div class="d-flex flex-column gap-2">${(items||[]).slice(0,10).map(n=>`
+                    <div class="p-2" style="border:1px solid rgba(255,255,255,.10); border-radius:14px; background:rgba(255,255,255,.03)">
+                      <div class="fw-bold">${safeText(n.title)}</div>
+                      <div class="small" style="color:rgba(234,240,255,.65)!important; font-weight:800;">${safeText(n.type)} • ${n.createdAt?new Date(n.createdAt).toLocaleDateString():''}</div>
+                      <div class="text-muted" style="color:rgba(234,240,255,.72)!important;">${safeText(n.content).slice(0,120)}...</div>
+                    </div>
+                  `).join('')}</div>
+                </div>`);
+            }
+            break;
+          case 'messages':
+            showLoading('Messages');
+            {
+              const items = await apiCall('/admin/messages/unread');
+              renderBlock(`
+                <div class="card-glass p-3">
+                  <div class="d-flex align-items-center justify-content-between mb-2">
+                    <h5 class="glass-title m-0"><i class="fa-regular fa-message me-2"></i>Messages</h5>
+                    <span class="badge badge-soft rounded-pill">${Array.isArray(items)?items.length:0}</span>
+                  </div>
+                  <div class="d-flex flex-column gap-2">${(items||[]).slice(0,10).map(m=>`
+                    <div class="p-2" style="border:1px solid rgba(255,255,255,.10); border-radius:14px; background:rgba(255,255,255,.03)">
+                      <div class="fw-bold">${safeText(m.message)}</div>
+                      <div class="small" style="color:rgba(234,240,255,.65)!important; font-weight:800;">${m.createdAt?new Date(m.createdAt).toLocaleString():''}</div>
+                    </div>
+                  `).join('')}</div>
+                </div>`);
+            }
+            break;
+          case 'reports':
+            showLoading('Reports');
+            {
+              const r = await apiCall('/admin/reports');
+              renderBlock(`
+                <div class="card-glass p-3">
+                  <h5 class="glass-title m-0"><i class="fa-solid fa-chart-line me-2"></i>Reports</h5>
+                  <div class="row g-2 mt-2">
+                    <div class="col-6"><div class="badge badge-soft rounded-pill px-3 py-2">Students: ${safeText(r.totalStudents)}</div></div>
+                    <div class="col-6"><div class="badge badge-soft rounded-pill px-3 py-2">Staff: ${safeText(r.totalStaff)}</div></div>
+                    <div class="col-6"><div class="badge badge-soft rounded-pill px-3 py-2">Classes: ${safeText(r.totalClasses)}</div></div>
+                    <div class="col-6"><div class="badge badge-soft rounded-pill px-3 py-2">Sections: ${safeText(r.totalSections)}</div></div>
+                  </div>
+                </div>`);
+            }
+            break;
+          case 'settings':
+            showLoading('Settings');
+            {
+              const s = await apiCall('/admin/settings');
+              renderBlock(`
+                <div class="card-glass p-3">
+                  <h5 class="glass-title m-0"><i class="fa-solid fa-gear me-2"></i>Settings</h5>
+                  <div class="text-muted" style="color:rgba(27,42,74,.65)!important; font-weight:800;">${safeText(s.message)}</div>
+                </div>`);
+            }
+            break;
+          default:
+            renderBlock(`<div class="card-glass-light p-3">Unknown view.</div>`);
+        }
+      }catch(err){
+        renderBlock(`<div class="card-glass p-3 text-danger">Failed to load ${view}: ${safeText(err.message)}</div>`);
+      }
+    }
+
+    // Initialize
+    setWidgetDefaults();
+    window.loadStudents = loadStudents;
+    window.loadStaff = loadStaff;
+
+    loadStudents();
+    loadStaff();
+
+
+
+  </script>
+</body>
+</html>
+

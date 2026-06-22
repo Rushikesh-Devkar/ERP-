@@ -1,0 +1,39 @@
+/* Staff Dashboard page-specific styles (kept minimal; theme lives in ../style.css) */
+
+.staff-shell .sidebar-brand .brand-mark{ background: linear-gradient(135deg, rgba(109,94,252,1), rgba(33,212,253,1)); }
+
+/* Slightly tweak sidebar color for staff */
+.staff-shell .sidebar{
+  background: linear-gradient(180deg, #0b1220 0%, #0f1b33 100%);
+}
+
+/* Topbar glow */
+.staff-topbar{
+  background: linear-gradient(135deg, rgba(109,94,252,.14), rgba(33,212,253,.10));
+}
+
+/* Glass cards hover polish */
+.card-glass,
+.card-glass-light{
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+}
+
+.card-glass:hover,
+.card-glass-light:hover{
+  transform: translateY(-2px);
+  box-shadow: 0 22px 55px rgba(0,0,0,.18);
+  border-color: rgba(255,255,255,.18);
+}
+
+/* Section header underline */
+.section-title{
+  font-weight: 900;
+  letter-spacing: .2px;
+}
+
+.table-modern td, .table-modern th{ white-space: nowrap; }
+
+@media (max-width: 576px){
+  .table-modern td, .table-modern th{ white-space: normal; }
+}
+

@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Staff Dashboard - School ERP</title>
+
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Font Awesome -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+  <!-- Shared enterprise theme -->
+  <link rel="stylesheet" href="../style.css" />
+  <link rel="stylesheet" href="./staff-dashboard.css" />
+</head>
+<body>
+  <div class="app-shell d-flex">
+
+    <!-- Sidebar -->
+    <nav id="sidebar" class="sidebar d-flex flex-column vh-100 position-sticky top-0">
+      <div class="sidebar-brand">
+        <div class="brand-mark">🏫</div>
+        <div class="brand-text">
+          <strong>School ERP</strong>
+          <span>Staff Portal</span>
+        </div>
+      </div>
+
+      <div class="px-2 pb-3">
+        <div class="d-flex gap-2">
+          <button class="btn btn-sm btn-soft rounded-pill" onclick="DashUI.sidebarToggle()" title="Collapse sidebar">
+            <i class="fa-solid fa-bars"></i>
+          </button>
+          <div class="d-none d-md-flex align-items-center ms-auto">
+            <span class="badge rounded-pill bg-transparent border" style="border-color:rgba(255,255,255,.2); color:var(--muted);">Staff</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Teacher profile preview -->
+      <div class="mx-2 mb-3" style="background:rgba(15,27,51,.70); border:1px solid rgba(255,255,255,.10); border-radius:var(--radius); padding:1rem; backdrop-filter: blur(12px);">
+        <div class="d-flex align-items-center gap-3">
+          <div class="avatar" style="width:72px; height:72px; border-radius:22px; background:linear-gradient(135deg, rgba(109,94,252,.95), rgba(33,212,253,.75)); display:flex; align-items:center; justify-content:center; box-shadow:0 14px 30px rgba(109,94,252,.25); flex:0 0 auto;">
+            <i class="fa-solid fa-user fs-2" style="color:#fff;"></i>
+          </div>
+          <div class="flex-grow-1">
+            <div id="welcomeTeacherName" class="fw-bold" style="font-size:1rem;">Teacher Name</div>
+            <div id="teacherDepartment" class="text-muted" style="color:rgba(234,240,255,.65)!important; font-weight:700;">Department</div>
+            <div class="mt-2 d-flex align-items-center gap-2">
+              <span class="badge badge-green rounded-pill">Online</span>
+              <span class="small" style="color:rgba(234,240,255,.65)!important; font-weight:800;">Last sync: just now</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sidebar-nav nav flex-column gap-1 px-2 pb-3" style="overflow:auto;">
+        <a class="nav-link active" href="#" data-staff-nav="dashboard" onclick="StaffApp.go('dashboard')">
+          <i class="fa-solid fa-gauge-high"></i><span>Dashboard</span>
+        </a>
+
+        <div class="mt-2 px-3 nav-section-title">TEACHING</div>
+        <a class="nav-link" href="#" data-staff-nav="classes" onclick="StaffApp.go('classes')">
+          <i class="fa-solid fa-layer-group"></i><span>My Classes</span>
+        </a>
+        <a class="nav-link" href="#" data-staff-nav="studentProfiles" onclick="StaffApp.go('studentProfiles')">
+          <i class="fa-solid fa-user-group"></i><span>Students</span>
+        </a>
+        <a class="nav-link" href="#" data-staff-nav="attendance" onclick="StaffApp.go('attendance')">
+          <i class="fa-solid fa-calendar-check"></i><span>Attendance</span>
+        </a>
+        <a class="nav-link" href="#" data-staff-nav="marks" onclick="StaffApp.go('marks')">
+          <i class="fa-solid fa-star-half-stroke"></i><span>Marks</span>
+        </a>
+        <a class="nav-link" href="#" data-staff-nav="assignments" onclick="StaffApp.go('assignments')">
+          <i class="fa-solid fa-clipboard-list"></i><span>Assignments</span>
+        </a>
+        <a class="nav-link" href="#" data-staff-nav="studyMaterials" onclick="StaffApp.go('studyMaterials')">
+          <i class="fa-solid fa-book-open"></i><span>Study Materials</span>
+        </a>
+        <a class="nav-link" href="#" data-staff-nav="examSchedule" onclick="StaffApp.go('examSchedule')">
+          <i class="fa-solid fa-chalkboard-user"></i><span>Exam Schedule</span>
+        </a>
+        <a class="nav-link" href="#" data-staff-nav="timetable" onclick="StaffApp.go('timetable')">
+          <i class="fa-solid fa-table"></i><span>Timetable</span>
+        </a>
+
+        <div class="mt-2 px-3 nav-section-title">STUDENT MANAGEMENT</div>
+        <a class="nav-link" href="#" data-staff-nav="studentProfiles" onclick="StaffApp.go('studentProfiles')">
+          <i class="fa-solid fa-address-card"></i><span>Student Profiles</span>
+        </a>
+        <a class="nav-link" href="#" data-staff-nav="studentPerformance" onclick="StaffApp.go('studentPerformance')">
+          <i class="fa-solid fa-chart-column"></i><span>Student Performance</span>
+        </a>
+        <a class="nav-link" href="#" data-staff-nav="studentRemarks" onclick="StaffApp.go('studentRemarks')">
+          <i class="fa-solid fa-comment-dots"></i><span>Student Remarks</span>
+        </a>
+        <a class="nav-link" href="#" data-staff-nav="studentLeaveRequests" onclick="StaffApp.go('studentLeaveRequests')">
+          <i class="fa-solid fa-plane-departure"></i><span>Student Leave Requests</span>
+        </a>
+
+        <div class="mt-2 px-3 nav-section-title">REPORTS</div>
+        <a class="nav-link" href="#" data-staff-nav="attendanceReports" onclick="StaffApp.go('attendanceReports')">
+          <i class="fa-solid fa-file-lines"></i><span>Attendance Reports</span>
+        </a>
+        <a class="nav-link" href="#" data-staff-nav="marksReports" onclick="StaffApp.go('marksReports')">
+          <i class="fa-solid fa-file-lines"></i><span>Marks Reports</span>
+        </a>
+        <a class="nav-link" href="#" data-staff-nav="classPerformanceReports" onclick="StaffApp.go('classPerformanceReports')">
+          <i class="fa-solid fa-award"></i><span>Class Performance Reports</span>
+        </a>
+
+        <div class="mt-2 px-3 nav-section-title">REQUESTS</div>
+        <a class="nav-link" href="#" data-staff-nav="applyLeave" onclick="StaffApp.go('applyLeave')">
+          <i class="fa-solid fa-plus"></i><span>Apply Leave</span>
+        </a>
+        <a class="nav-link" href="#" data-staff-nav="leaveHistory" onclick="StaffApp.go('leaveHistory')">
+          <i class="fa-solid fa-clock-rotate-left"></i><span>Leave History</span>
+        </a>
+
+        <div class="mt-2 px-3 nav-section-title">FINANCE</div>
+        <a class="nav-link" href="#" data-staff-nav="salaryDetails" onclick="StaffApp.go('salaryDetails')">
+          <i class="fa-solid fa-money-bill-wave"></i><span>Salary Details</span>
+        </a>
+        <a class="nav-link" href="#" data-staff-nav="salaryHistory" onclick="StaffApp.go('salaryHistory')">
+          <i class="fa-solid fa-history"></i><span>Salary History</span>
+        </a>
+        <a class="nav-link" href="#" data-staff-nav="salarySlipDownload" onclick="StaffApp.go('salarySlipDownload')">
+          <i class="fa-solid fa-file-invoice-dollar"></i><span>Salary Slip Download</span>
+        </a>
+
+        <div class="mt-2 px-3 nav-section-title">COMMUNICATION</div>
+        <a class="nav-link" href="#" data-staff-nav="announcements" onclick="StaffApp.go('announcements')">
+          <i class="fa-solid fa-bullhorn"></i><span>Announcements</span>
+        </a>
+        <a class="nav-link" href="#" data-staff-nav="messages" onclick="StaffApp.go('messages')">
+          <i class="fa-regular fa-message"></i><span>Messages</span>
+        </a>
+        <a class="nav-link" href="#" onclick="StaffApp.go('messages')">
+          <i class="fa-solid fa-bell"></i><span>Notice Board</span>
+        </a>
+
+        <div class="mt-2 px-3 nav-section-title">RESOURCES</div>
+        <a class="nav-link" href="#" data-staff-nav="documents" onclick="StaffApp.go('documents')">
+          <i class="fa-solid fa-folder-open"></i><span>Documents</span>
+        </a>
+        <a class="nav-link" href="#" onclick="StaffApp.notify('Library is a placeholder (connect to Library API later).')">
+          <i class="fa-solid fa-book-open"></i><span>Library</span>
+        </a>
+
+        <a class="nav-link mt-2" href="#" onclick="DashUI.logout()">
+          <i class="fa-solid fa-right-from-bracket"></i><span>Logout</span>
+        </a>
+      </div>
+    </nav>
+
+    <!-- Main -->
+    <main class="main flex-fill">
+      <div class="topbar py-3">
+        <div class="container-fluid px-3 px-md-4">
+          <div class="d-flex align-items-center gap-3">
+            <div class="d-flex d-md-none">
+              <button class="btn btn-soft rounded-pill" onclick="DashUI.sidebarToggle()" aria-label="Toggle sidebar">
+                <i class="fa-solid fa-bars"></i>
+              </button>
+            </div>
+
+            <div class="flex-grow-1">
+              <div class="d-flex align-items-center gap-3">
+                <div>
+                  <div class="fw-bold" style="color:rgba(27,42,74,.82);">Welcome</div>
+                  <div id="welcomeTeacher" class="fw-extrabold" style="color:rgba(27,42,74,.98);">Staff</div>
+                </div>
+                <div class="text-muted" style="color:rgba(27,42,74,.65)!important; font-weight:800;">
+                  Today • <span id="currentDate"></span>
+                </div>
+              </div>
+            </div>
+
+            <div class="d-flex align-items-center gap-2">
+              <button class="btn btn-soft rounded-pill px-3" title="Notifications" onclick="StaffApp.notify('Notifications placeholder')">
+                <i class="fa-solid fa-bell"></i>
+              </button>
+              <button class="btn btn-soft rounded-pill px-3" title="Messages" onclick="StaffApp.go('messages')">
+                <i class="fa-regular fa-message"></i>
+              </button>
+
+              <div class="dropdown">
+                <button class="btn btn-soft dropdown-toggle rounded-pill px-3" data-bs-toggle="dropdown" aria-expanded="false">
+                  <i class="fa-solid fa-circle-user me-2"></i>
+                  <span class="d-none d-md-inline">Profile</span>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                  <li><a class="dropdown-item" href="#" onclick="StaffApp.go('dashboard')"><i class="fa-solid fa-user me-2"></i>My Profile</a></li>
+                  <li><a class="dropdown-item" href="#" onclick="StaffApp.notify('Settings placeholder')"><i class="fa-solid fa-sliders me-2"></i>Settings</a></li>
+                  <li><hr class="dropdown-divider"></li>
+                  <li><a class="dropdown-item" href="#" onclick="DashUI.logout()"><i class="fa-solid fa-right-from-bracket me-2"></i>Logout</a></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="container-fluid">
+        <div class="main-inner">
+          <div class="p-3 p-md-4">
+
+            <!-- Top dashboard cards -->
+            <section class="mb-3">
+              <div class="row g-3" id="staff-top-metrics">
+                <div class="col-6 col-lg-3">
+                  <div class="card-glass-light p-3 h-100">
+                    <div class="d-flex align-items-center justify-content-between">
+                      <div>
+                        <div class="metric" id="w-total-classes">—</div>
+                        <div class="metric-sub">Total Classes</div>
+                      </div>
+                      <i class="fa-solid fa-layer-group" style="font-size:1.8rem; color:rgba(109,94,252,.9)"></i>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="col-6 col-lg-3">
+                  <div class="card-glass-light p-3 h-100">
+                    <div class="d-flex align-items-center justify-content-between">
+                      <div>
+                        <div class="metric" id="w-total-students">—</div>
+                        <div class="metric-sub">Total Students</div>
+                      </div>
+                      <i class="fa-solid fa-user-group" style="font-size:1.8rem; color:rgba(33,212,253,.9)"></i>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="col-6 col-lg-3">
+                  <div class="card-glass-light p-3 h-100">
+                    <div class="d-flex align-items-center justify-content-between">
+                      <div>
+                        <div class="metric" id="w-attendance-this-month">—</div>
+                        <div class="metric-sub">Attendance This Month</div>
+                      </div>
+                      <i class="fa-solid fa-calendar-check" style="font-size:1.8rem; color:rgba(34,197,94,.95)"></i>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="col-6 col-lg-3">
+                  <div class="card-glass-light p-3 h-100">
+                    <div class="d-flex align-items-center justify-content-between">
+                      <div>
+                        <div class="metric" id="w-marks-submitted">—</div>
+                        <div class="metric-sub">Marks Submitted</div>
+                      </div>
+                      <i class="fa-solid fa-star-half-stroke" style="font-size:1.8rem; color:rgba(33,212,253,.95)"></i>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="col-6 col-lg-3">
+                  <div class="card-glass-light p-3 h-100">
+                    <div class="d-flex align-items-center justify-content-between">
+                      <div>
+                        <div class="metric" id="w-assignments-given">—</div>
+                        <div class="metric-sub">Assignments Given</div>
+                      </div>
+                      <i class="fa-solid fa-clipboard-list" style="font-size:1.8rem; color:rgba(245,158,11,.95)"></i>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="col-6 col-lg-3">
+                  <div class="card-glass-light p-3 h-100">
+                    <div class="d-flex align-items-center justify-content-between">
+                      <div>
+                        <div class="metric" id="w-leave-balance">—</div>
+                        <div class="metric-sub">Leave Balance</div>
+                      </div>
+                      <i class="fa-solid fa-plane-departure" style="font-size:1.8rem; color:rgba(109,94,252,.95)"></i>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="col-6 col-lg-3">
+                  <div class="card-glass-light p-3 h-100">
+                    <div class="d-flex align-items-center justify-content-between">
+                      <div>
+                        <div class="metric" id="w-salary-this-month">—</div>
+                        <div class="metric-sub">Salary This Month</div>
+                      </div>
+                      <i class="fa-solid fa-money-bill-wave" style="font-size:1.8rem; color:rgba(34,197,94,.95)"></i>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="col-6 col-lg-3">
+                  <div class="card-glass-light p-3 h-100">
+                    <div class="d-flex align-items-center justify-content-between">
+                      <div>
+                        <div class="metric" id="w-leave-status">—</div>
+                        <div class="metric-sub">Leave Status</div>
+                      </div>
+                      <i class="fa-solid fa-circle-info" style="font-size:1.8rem; color:rgba(245,158,11,.95)"></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- Main content mount -->
+            <div id="staff-mainContent"></div>
+
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script src="../script.js"></script>
+  <script src="./staff-dashboard.js"></script>
+
+  <script>
+    // Init date + welcome label; StaffApp.init() handles most dashboard wiring.
+    (function(){
+      try{
+        if(typeof DashUI !== 'undefined' && DashUI.ensureRole) DashUI.ensureRole('staff');
+        if(typeof DashUI !== 'undefined' && DashUI.hydrateSidebarCollapse) DashUI.hydrateSidebarCollapse();
+      }catch(e){}
+
+      const currentDateEl = document.getElementById('currentDate');
+      if(currentDateEl) currentDateEl.textContent = new Date().toLocaleDateString();
+
+      // Mirror welcome name from StaffApp demo (if already initialized, it will update too)
+      const welcome = document.getElementById('welcomeTeacher');
+      if(welcome) welcome.textContent = 'Staff';
+    })();
+  </script>
+</body>
+</html>
+
