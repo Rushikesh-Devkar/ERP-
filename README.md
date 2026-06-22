@@ -1,79 +1,172 @@
 # 🏫 School ERP System
 
-Simple, beginner-friendly School ERP built with Node.js, Express, MongoDB, and vanilla HTML/CSS/JS.
+A complete School ERP (Enterprise Resource Planning) System built using Node.js, Express.js, MongoDB, HTML, CSS, and JavaScript.
 
-## 🚀 Quick Start
+## 🚀 Project Status
 
-### 1. Prerequisites
-```
-- Node.js (v16+)
-- MongoDB (local or MongoDB Atlas)
-```
+⚠️ Currently Under Development
 
-### 2. Setup & Seed Demo Users (ONE COMMAND!)
-```bash
-cd "C:\Users\ANIL\Desktop\school-erp"
-npm run seed   # ← Creates all demo users automatically!
-npm install
-npm run dev
-```
+### Completed Modules
 
-**MongoDB**: Install OR use MongoDB Atlas (free cloud DB)**
+* Login & Authentication
+* Dashboard
+* Student Management
+* Teacher Management
+* Staff Management
+* Role-Based Access Control
 
-Backend runs on `http://localhost:5000`
+### Upcoming Modules
 
-### 4. Start Frontend
-```bash
-# Open in browser
-C:\Users\ANIL\Desktop\school-erp\frontend\index.html
-```
+* Attendance Management
+* Fees Management
+* Examination System
+* Report Generation
+* Leave Management
+* Notifications
+* Timetable Management
 
-## 👥 Demo Users (Auto-created on first use)
-| Role | Email | Password |
-|------|-------|----------|
-| Admin | admin123@gmail.com | admin123 |
-| Student | student123@gmail.com | student123 |
-| Teacher | teacher123@gmail.com | teacher123 |
-| Principal | principal@gmail.com | principal123 |
+---
+
+## 🛠 Technology Stack
+
+### Backend
+
+* Node.js
+* Express.js
+* MongoDB
+* Mongoose
+* JWT Authentication
+* bcrypt
+
+### Frontend
+
+* HTML5
+* CSS3
+* JavaScript
+
+---
 
 ## 📁 Project Structure
-```
+
 school-erp/
-├── backend/          # Node.js + Express API
-│   ├── models/       # MongoDB schemas
-│   ├── controllers/  # Business logic
-│   ├── routes/       # API endpoints
-│   ├── middleware/   # Auth middleware
-│   └── server.js     # Main server
-├── frontend/         # Static HTML/JS
-└── package.json
-```
 
-## 🔐 Features by Role
-**Admin**: Add students/staff, view lists
-**Student**: View profile, attendance, marks, fees, apply leave/documents
-**Staff**: Mark attendance, upload marks, view students/leaves
-**Principal**: Reports, approve leaves
+├── backend/
 
-## 🛠 Tech Stack
-- **Backend**: Node.js, Express, MongoDB, Mongoose
-- **Auth**: JWT, bcrypt
-- **Frontend**: Vanilla HTML/CSS/JavaScript (no frameworks)
+│ ├── controllers/
 
-## 📱 API Endpoints
-```
-POST /api/auth/login
-POST /api/admin/students
-POST /api/students/leave
-...
-```
+│ ├── middleware/
 
-## 🎉 Ready to use!
-1. Start MongoDB
-2. `npm install` in backend
-3. `npm run dev` 
-4. Open `frontend/index.html`
-5. Login with demo credentials
+│ ├── models/
 
-**That's it!** Full ERP system ready ✅
+│ ├── routes/
 
+│ └── server.js
+
+├── frontend/
+
+├── README.md
+
+├── package.json
+
+└── .gitignore
+
+---
+
+## 👥 User Roles
+
+### Admin
+
+* Manage Students
+* Manage Teachers
+* Manage Staff
+* Manage Academic Records
+* View Reports
+
+### Teacher
+
+* Manage Attendance
+* Upload Marks
+* View Student Information
+
+### Student
+
+* View Profile
+* View Attendance
+* View Marks
+* View Fee Status
+* Apply for Leave
+
+### Principal
+
+* Monitor School Activities
+* Approve Leave Requests
+* View Reports & Analytics
+
+---
+
+## ⚙️ Installation
+
+### Clone Repository
+
+git clone https://github.com/Rushikesh-Devkar/ERP-.git
+
+### Install Dependencies
+
+npm install
+
+### Start Development Server
+
+npm run dev
+
+---
+
+## 🔐 Demo Credentials
+
+### Admin
+
+Email: [admin123@gmail.com](mailto:admin123@gmail.com)
+
+Password: admin123
+
+### Teacher
+
+Email: [teacher123@gmail.com](mailto:teacher123@gmail.com)
+
+Password: teacher123
+
+### Student
+
+Email: [student123@gmail.com](mailto:student123@gmail.com)
+
+Password: student123
+
+### Principal
+
+Email: [principal@gmail.com](mailto:principal@gmail.com)
+
+Password: principal123
+
+---
+
+## 🎯 Future Enhancements
+
+* Mobile Responsive UI
+* Parent Portal
+* Online Fee Payment
+* SMS & Email Notifications
+* AI Based Analytics
+* Multi-School Support
+
+---
+
+## 👨‍💻 Developer
+
+Rushikesh Devkar
+
+B.Tech Electronics and Computer Engineering
+
+---
+
+## 📄 License
+
+This project is developed for educational and learning purposes.
