@@ -133,12 +133,7 @@
               </button>
             </div>
 
-            <div class="flex-grow-1">
-              <div class="input-group" style="max-width:520px;">
-                <span class="input-group-text btn-soft" style="border-radius:14px 0 0 14px; border-right:none;"><i class="fa-solid fa-magnifying-glass"></i></span>
-                <input id="globalSearch" type="text" class="form-control" placeholder="Search students, staff, fees, reports..." />
-              </div>
-            </div>
+
 
             <div class="d-flex align-items-center gap-2">
               <button class="btn btn-soft rounded-pill px-3" title="Notifications" onclick="window.dispatchEvent(new CustomEvent('dash:toast', {detail:'Notifications'}))">
@@ -572,16 +567,18 @@
     }
 
     function setWidgetDefaults(){
-      // These are demo values; only totals below can be derived from wired endpoints.
-      document.getElementById('w-total-admissions').textContent = '—';
-      document.getElementById('w-active-classes').textContent = '—';
-      document.getElementById('w-present').textContent = '—';
-      document.getElementById('w-absent').textContent = '—';
-      document.getElementById('w-fees-collected').textContent = '₹ —';
-      document.getElementById('w-pending-fees').textContent = '₹ —';
-      document.getElementById('w-staff-on-leave').textContent = '—';
-      document.getElementById('w-student-leave-requests').textContent = '—';
+      // Reset while async loads.
+      const ids = [
+        'w-total-admissions','w-active-classes','w-present','w-absent',
+        'w-fees-collected','w-pending-fees','w-staff-on-leave','w-student-leave-requests'
+      ];
+      ids.forEach(id => {
+        const el = document.getElementById(id);
+        if(!el) return;
+        el.textContent = '—';
+      });
     }
+
 
     async function loadStudents(){
       const box = document.getElementById('studentsBox');
@@ -759,11 +756,7 @@
     // });
 
 
-    // Search placeholder
-    document.getElementById('globalSearch').addEventListener('input', (e) => {
-      // Safe placeholder: do nothing heavy.
-      console.log('Search:', e.target.value);
-    });
+
 
     // Admin navigation (wired to backend extended admin APIs)
     async function adminNavigate(view){
@@ -966,6 +959,118 @@
       }
     }
 
+    async function loadDashboardMetrics(){
+      try{
+        // total students/staff are already wired by loadStudents/loadStaff, but widgets require additional metrics.
+        // These endpoints may not exist yet for full metrics; keep best-effort for now.
+        const url = '/api/admin/reports';
+        const r = await apiCall('/admin/reports');
+
+        // Use whatever fields exist (current backend returns totals only).
+        if(r){
+          if(r.totalStudents !== undefined){
+            const el = document.getElementById('w-total-students');
+            if(el) el.textContent = r.totalStudents;
+          }
+          if(r.totalStaff !== undefined){
+            const el = document.getElementById('w-total-staff');
+            if(el) el.textContent = r.totalStaff;
+          }
+          if(r.totalClasses !== undefined){
+            const el = document.getElementById('w-active-classes');
+            if(el) el.textContent = r.totalClasses;
+          }
+        }
+      }catch(e){
+        // leave widgets as '—' if missing endpoints
+      }
+
+      // Recently wired tables
+      try{
+        const admissions = await apiCall('/admin/admissions');
+        const tbody = document.getElementById('tbl-admissions');
+        if(tbody){
+          tbody.innerHTML = (admissions||[]).slice(0,8).map(s=>`
+            <tr>
+              <td>${safeText(s.userId?.name)}</td>
+              <td>${safeText(s.class)}</td>
+              <td>${safeText(s.rollNo)}</td>
+              <td><span class="badge badge-soft rounded-pill">${safeText(s.status || s.admissionStatus || 'pending')}</span></td>
+            </tr>
+          `).join('') || '<tr><td colspan="4">No admissions found</td></tr>';
+        }
+      }catch(e){}
+
+      try{
+        const leaves = await apiCall('/admin/workflow/pending-leaves');
+        const tbody = document.getElementById('tbl-leaves');
+        if(tbody){
+          tbody.innerHTML = (leaves||[]).slice(0,8).map(l=>`
+            <tr>
+              <td>${safeText(l.requestedByUserId?.name || l.requestedByUserId?.email || l.requestedByUserId?._id)}</td>
+              <td>${l.requestedByRole === 'student' ? 'Student' : 'Staff'}</td>
+              <td>${safeText(l.leaveType)}</td>
+              <td>${safeText(l._days || l.days || '')}</td>
+              <td><span class="badge badge-amber rounded-pill">${safeText(l.status)}</span></td>
+              <td><button class="btn btn-sm btn-soft rounded-pill" onclick="AppViews.render('dashboard')">Review</button></td>
+            </tr>
+          `).join('') || '<tr><td colspan="7">No leave requests found</td></tr>';
+        }
+      }catch(e){}
+
+      try{
+        const docs = await apiCall('/admin/workflow/pending-doc-requests');
+        const tbody = document.getElementById('tbl-docs');
+        if(tbody){
+          tbody.innerHTML = (docs||[]).slice(0,8).map(d=>`
+            <tr>
+              <td>${safeText(d.userId?.name || d.userId?.email)}</td>
+              <td>${safeText(d.documentType || d.type)}</td>
+              <td>${d.createdAt ? new Date(d.createdAt).toLocaleDateString() : '—'}</td>
+              <td><span class="badge badge-soft rounded-pill">${safeText(d.status)}</span></td>
+            </tr>
+          `).join('') || '<tr><td colspan="4">No document requests found</td></tr>';
+        }
+      }catch(e){}
+
+      // Notification center cards: replace demo text with workflow counts (best-effort)
+      try{
+        const pendingLeaves = await apiCall('/admin/workflow/pending-leaves');
+        const pendingDocs = await apiCall('/admin/workflow/pending-doc-requests');
+        const notifList = document.getElementById('notifList');
+        if(notifList){
+          const cards = notifList.querySelectorAll(':scope > div');
+          if(cards && cards.length){
+            // Update first (pending leaves)
+            if(cards[0]){
+              const count = Array.isArray(pendingLeaves)?pendingLeaves.length:0;
+              cards[0].querySelector('.text-muted')?.remove();
+              const mut = document.createElement('div');
+              mut.className = 'text-muted';
+              mut.style.color = 'rgba(234,240,255,.65)!important';
+              mut.innerHTML = `${count} request${count===1?'':'s'} need approval.`;
+              cards[0].querySelector('div > div:nth-child(2)')?.remove();
+              // Append after title
+              const inner = cards[0].querySelector('div');
+              const title = inner.querySelector('.fw-bold');
+              if(title){ inner.insertBefore(mut, title.nextSibling); }
+            }
+            if(cards[3]){
+              const count = Array.isArray(pendingDocs)?pendingDocs.length:0;
+              cards[3].querySelector('.text-muted')?.remove();
+              const mut = document.createElement('div');
+              mut.className = 'text-muted';
+              mut.style.color = 'rgba(234,240,255,.65)!important';
+              mut.innerHTML = `${count} document${count===1?'':'s'} in queue.`;
+              const inner = cards[3].querySelector('div');
+              const title = inner.querySelector('.fw-bold');
+              if(title){ inner.insertBefore(mut, title.nextSibling); }
+            }
+          }
+        }
+      }catch(e){}
+    }
+
     // Initialize
     setWidgetDefaults();
     window.loadStudents = loadStudents;
@@ -973,6 +1078,8 @@
 
     loadStudents();
     loadStaff();
+    loadDashboardMetrics();
+
 
 
 
