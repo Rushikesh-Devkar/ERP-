@@ -14,9 +14,10 @@ router.use(requireRole(['admin']));
 router.post('/admissions', adminExtendedController.createAdmission);
 router.get('/admissions', adminExtendedController.listAdmissions);
 
-// Attendance (admin)
+// Attendance (admin) - legacy endpoints (kept)
 router.get('/attendance', adminExtendedController.getAttendance);
 router.post('/attendance', adminExtendedController.markAttendanceAdmin);
+
 
 // Classes/Sections
 router.post('/classes', adminExtendedController.createClass);

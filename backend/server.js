@@ -26,6 +26,8 @@ app.use('/api/admin', require('./routes/admin'));
 app.use('/api/admin', require('./routes/adminExtended'));
 app.use('/api/school', require('./routes/school'));
 app.use('/api/admissions', require('./routes/admissions'));
+app.use('/api', require('./routes/attendanceRoutes'));
+
 
 
 // Home Route
